@@ -32,6 +32,18 @@ app.get('/api/questions/:id', async (req, res) => {
   }
 });
 
+app.get('/api/answer/:id', async (req, res) => {
+  try {
+      const result = await dao.getOptions(req.params.id);
+      if (result.error)
+          res.status(404).json(result);
+      else
+          res.json(result);
+  } catch (err) {
+      res.status(503).json({error: `Database error during query execution.`});
+  }
+});
+
 
 
 // activate the server
