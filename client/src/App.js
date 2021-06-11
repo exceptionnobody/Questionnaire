@@ -4,11 +4,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import './App.css';
 
-import { Container, Row, Col, Button } from 'react-bootstrap/';
+import { Container, Row, Col } from 'react-bootstrap/';
 import ContentList from './components/ContentList'
 import Navigation from './components/Navigation';
 import Filters from './components/Filter'
-import ModalForm  from './components/ModalForm';
 import FormPersonale from './components/FormPersonale';
 import DomandeMenu from './components/DomandeMenu';
 import DomandaAperta from './components/DomandaAperta';
@@ -27,15 +26,15 @@ const questionList = [
 function App() {
 
   const [mode, setMode]=useState('view')
-  const MODAL = { CLOSED: -2, ADD: -1 };
-  const [setModal, setModalClosed] = useState(MODAL.CLOSED);
+  //const MODAL = { CLOSED: -2, ADD: -1 };
+  //const [setModal, setModalClosed] = useState(MODAL.CLOSED);
   const [questionari, setQuestionari] =useState([])
-  const [idQuestionario, setIdQuestionario] =useState(0);
+  const [idQuestionario] =useState(0);
 
-  const handleClose = () => {
+/*   const handleClose = () => {
     setModalClosed(MODAL.CLOSED);
   }
-
+ */
 
   const aggiungiQuestionario = ()=>{
       setMode('create');
@@ -53,10 +52,10 @@ function App() {
       setQuestionari(questionariovett)
       //setIdQuestionario(d=>d+1)
   }
-
+/* 
   const handleSaveOrUpdate = ()=>{
 
-  }
+  } */
   return (
 
     <Container fluid>
@@ -146,7 +145,7 @@ const QuestionarioManager = (props) => {
         {modo === "aperta" && showDomanda && <DomandaAperta did={did} aggiungiDomandaAperta={aggiungiDomandaAperta}/>}
         {modo === "chiusa" && showDomanda && <DomandaChiusa did={did} aggiungiDomandaChiusa={aggiungiDomandaChiusa} />}
         {modo === "temp" && !showDomanda && <ContentList  questionList={domande}   SpostaElementi={SpostaElementi} />}
-        <ContentList  questionList={domande}  SpostaElementi={SpostaElementi}  />
+        {/*<ContentList  questionList={domande}  SpostaElementi={SpostaElementi}  />*/}
      </Col>
      </>);
     

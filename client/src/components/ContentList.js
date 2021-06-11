@@ -45,12 +45,12 @@ const OptionData = (props) => {
 
 
   const AnswerControls = (props) => {
-    const { onDelete, onEdit, SpostaElementi, domanda } = props;
+    const { SpostaElementi, domanda, lunghezzadomande } = props;
     return (
       <>
         <div className="flex-fill m-auto">
-          <Button variant="danger" className="shadow-none" onClick={()=>SpostaElementi(domanda.did, domanda.did+1)}> <ArrowDown /></Button>
-          <Button variant="danger" className="shadow-none" onClick={()=>SpostaElementi(domanda.did, domanda.did-1 )}><ArrowUp/></Button>
+         {lunghezzadomande > 1 && domanda.did !== lunghezzadomande-1 && <Button variant="danger" className="shadow-none" onClick={()=>SpostaElementi(domanda.did, domanda.did+1)}> <ArrowDown /></Button> }
+         {lunghezzadomande > 1 &&  domanda.did !== 0 && <Button variant="danger" className="shadow-none" onClick={()=>SpostaElementi(domanda.did, domanda.did-1 )}><ArrowUp/></Button> }
           <Button variant="danger" className="shadow-none" ><PencilSquare /></Button>
           <Button variant="danger" className="shadow-none" ><Trash /></Button>
         </div>
@@ -76,7 +76,7 @@ const OptionData = (props) => {
                       <h3> {t.min} - {t.max}</h3>
                   
                     </div>
-                    <AnswerControls domanda={t} SpostaElementi={SpostaElementi}/>
+                    <AnswerControls domanda={t} lunghezzadomande={questionList.length}SpostaElementi={SpostaElementi}/>
                 </ListGroup.Item>
               );
             })

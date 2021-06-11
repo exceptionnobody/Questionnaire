@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import {Accordion, Card, Form, Button, Col, Row, InputGroup, FormControl} from 'react-bootstrap'
+import {Accordion, Card, Form, Button, Col, Row} from 'react-bootstrap'
 
 const DomandaChiusa = (props)=>{
 
@@ -81,7 +81,7 @@ return <Accordion defaultActiveKey="0">
 { opzioni!==null && opzioni.map((t, i) => {
     return <Row key={i} className="align-items-center">
     <Col xs="auto">
-      <Form.Label htmlFor="inlineFormInput" visuallyHidden>
+      <Form.Label htmlFor="inlineFormInput" visuallyhidden="true">
         Quesito {`${i}`}
       </Form.Label>
       <Form.Control
