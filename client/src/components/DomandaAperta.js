@@ -15,8 +15,8 @@ const DomandaAperta = (props)=>{
         else
             min=max=0;
 
-        const domanda = {did: props.did, qid: idQuestionario, modificabile:true, quesito: quesito, min: min, max:max, numopzioni: 1, tipo:0, opzioneaperta: "OPTAPERTA" , temporaneo: 1}
-        props.aggiungiDomandaAperta(domanda);
+        const domanda = {did: props.did, qid: idQuestionario, modificabile:true, quesito: quesito, min: min, max:max, numopzioni: 1, tipo:0, opzioneaperta: "OPTAPERTA" }
+        props.aggiungiDomanda(domanda);
     }
 return <Accordion defaultActiveKey="0">
   <Card>
@@ -27,7 +27,7 @@ return <Accordion defaultActiveKey="0">
       <Card.Body>
           <Form onSubmit={sottometti}>
   <Form.Row>
-    <Form.Group as={Col} controlid="formGridEmail">
+    <Form.Group as={Col}>
       <Form.Label>Quesito</Form.Label>
       <Form.Control placeholder="Inserisci Quesito" onChange={(ev) => setQuesito(ev.target.value)} required/>
     </Form.Group>

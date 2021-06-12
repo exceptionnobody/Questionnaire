@@ -26,17 +26,10 @@ const questionList = [
 function App() {
 
   const [mode, setMode]=useState('view')
-  //const MODAL = { CLOSED: -2, ADD: -1 };
-  //const [setModal, setModalClosed] = useState(MODAL.CLOSED);
-  const [questionari, setQuestionari] =useState([])
   const [idQuestionari, setIdQuestionari] = useState(0)
+  const [questionari, setQuestionari] =useState([])
   const [questionarioselezionato, setQuestionarioselezionato] = useState({});
 
-
-/*   const handleClose = () => {
-    setModalClosed(MODAL.CLOSED);
-  }
- */
 
   const aggiungiQuestionario = ()=>{
       setMode('create');
@@ -49,9 +42,9 @@ function App() {
   const compilaQuestionario = (name) => {
       const questionariovett = [...questionari]
 
-      questionariovett.push({titolo:name, qid:questionari.length, aid:0})
-      setMode('compila')
+      questionariovett.push({titolo:name, qid:idQuestionari, aid:0})
       setQuestionari(questionariovett)
+      setMode('compila')
   }
  
   const aggiungiDomandeQuestionario = (domandeQuestionarioProv)=>{
@@ -60,7 +53,6 @@ function App() {
     tempQuestionario[idQuestionari].domande = domandeQuestionarioProv
     tempQuestionario[idQuestionari].numdomande = domandeQuestionarioProv.length
     setQuestionari(tempQuestionario)
-    console.log(tempQuestionario)
     setMode('view')
     
   } 
@@ -92,21 +84,23 @@ function App() {
 
 const QuestionarioManager = (props) => {
 
-  const {mode,filtraQuestionario, idQuestionari, chiudiQuestionario, compilaQuestionario, questionari,  aggiungiDomandeQuestionario, questionarioselezionato } = props;
+  const {mode, filtraQuestionario, idQuestionari, chiudiQuestionario, compilaQuestionario, questionari,  aggiungiDomandeQuestionario, questionarioselezionato } = props;
 
   const [ domande, setDomande] = useState([])
   //const [ domande, setDomande] = useState([...questionList])
   const [ showDomanda, setShowDomanda] = useState()
   const [did, setDid] = useState(0);
   const [modo, setModo] = useState('')
-  const [numerodomande, setNumeroDomande] = useState(0);
+
   const pubblicaQuestionario= () =>{
     console.log("test pubblica Questionario")
+    let newId
     if(domande.length >1){
 
      const tempDomande = [...domande]
 
-     let newId = numerodomande;
+     if(idQuestionari !== 0)
+        newId = questionari[idQuestionari-1].numdomande;
 
      for(const v of tempDomande){
        v.modificabile=false
@@ -122,7 +116,7 @@ const QuestionarioManager = (props) => {
      setDid(0)
      setModo('view')
 
-
+     console.log("Prima di Pubblicare le domande e di conseguenza il questionario: ")
      console.log(tempDomande)
      aggiungiDomandeQuestionario(tempDomande)
     }else{
@@ -138,19 +132,13 @@ const QuestionarioManager = (props) => {
   };
 
 
-  const aggiungiDomandaAperta = (domanda) =>{
+  const aggiungiDomanda = (domanda) =>{
+    console.log(domanda)
+    console.log(idQuestionari)
         setDomande(s => [...s, domanda]);
         setShowDomanda(false);
         setModo("temp")
         setDid(d => d+1)
-  }
-
-  const aggiungiDomandaChiusa = (domanda) =>{
-        setDomande(s => [...s, domanda]);
-        setShowDomanda(false);
-        setModo("temp")
-        setDid(d => d+1)
-        setNumeroDomande(e => e+1)
   }
 
   const SpostaElementi = function(old_index, new_index) {
@@ -163,9 +151,7 @@ const QuestionarioManager = (props) => {
 
     arr[old_index].did = val1.did
     arr[new_index].did = val2.did
-    console.log(arr)
     setDomande(arr)
-    //return nums;
   }
 
 
@@ -178,16 +164,14 @@ const QuestionarioManager = (props) => {
       i++; 
     }
     i++
-    console.log(tempDomande)
     setDid(i)
     setDomande(tempDomande)
-    setNumeroDomande(e => e-1)
   }
 
   return (<>
         <Col xs={3} bg="light" className="below-nav" id="left-sidebar">
           {mode === 'view' && <Filters items={questionari} filtraQuestionario={filtraQuestionario}/>}
-          {mode === 'compila' && <DomandeMenu items={opzioneDomande} aggiungiDomandaAperta={aggiungiDomandaAperta} aggiungiDomandaChiusa={aggiungiDomandaChiusa}/>}
+          {mode === 'compila' && <DomandeMenu items={opzioneDomande} aggiungiDomanda={aggiungiDomanda} />}
         </Col>      
       <Col xs={9} className="below-nav">
         {mode ==="view" && <><h2 className="pb-3">{questionarioselezionato.titolo} <small className="text-muted"></small></h2>
@@ -198,8 +182,8 @@ const QuestionarioManager = (props) => {
         </h3>
         
         </>}
-        {modo === "aperta" && showDomanda && <DomandaAperta did={did} aggiungiDomandaAperta={aggiungiDomandaAperta} idQuestionario={idQuestionari}/>}
-        {modo === "chiusa" && showDomanda && <DomandaChiusa did={did} aggiungiDomandaChiusa={aggiungiDomandaChiusa} idQuestionario={idQuestionari}/>}
+        {modo === "aperta" && showDomanda && <DomandaAperta did={did} aggiungiDomanda={aggiungiDomanda} idQuestionario={idQuestionari}/>}
+        {modo === "chiusa" && showDomanda && <DomandaChiusa did={did} aggiungiDomanda={aggiungiDomanda} idQuestionario={idQuestionari}/>}
         {modo === "temp" && !showDomanda && <ContentList  questionList={domande}   SpostaElementi={SpostaElementi} CancellaDomanda={CancellaDomanda} />}
         {/*<ContentList  questionList={domande}  SpostaElementi={SpostaElementi}  />*/}
      </Col>

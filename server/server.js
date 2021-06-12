@@ -34,9 +34,9 @@ app.get('/api/questionari', async (req, res) => {
 })
 
 
-app.get('/api/questions/:id', async (req, res) => {
+app.get('/api/domande/:id', async (req, res) => {
   try {
-      const result = await dao.getQuestions(req.params.id);
+      const result = await dao.getDomande(req.params.id);
       if (result.error)
           res.status(404).json(result);
       else
@@ -58,7 +58,26 @@ app.get('/api/answer/:id', async (req, res) => {
   }
 });
 
+app.post('/api/questionari/', async (req, res) => {
 
+  const questionario = {
+    admin: req.body.admin,
+    titolo: req.body.titolo,
+    numdomande: req.body.numdomande,
+  };
+
+  const domande =  req.body.domande
+
+  console.log(domande)
+  try {
+    await dao.createQuestionario(questionario);
+    await dao.inserisciDomande(domande)
+    res.status(201).end();
+  } catch(err) {
+    res.status(503).json({error: `Database error during the creation of task (${task.description}).`});
+  }
+
+});
 
 // activate the server
 app.listen(port, () => {

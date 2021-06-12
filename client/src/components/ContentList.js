@@ -4,7 +4,7 @@ import { PencilSquare, Trash, ArrowDown, ArrowUp } from 'react-bootstrap-icons';
 
 const OptionData = (props) => {
     const { optionsList } = props;
-    const tipodomanda = optionsList.numopzioni!==1 ? true: false;
+    const tipodomanda = (optionsList.tipo ===1 && optionsList.numopzioni >= 1) ? true: false;
   
     return (
       <>
@@ -13,9 +13,9 @@ const OptionData = (props) => {
           <h4> {optionsList.quesito} </h4>
         </div>
         <div className="flex-fill m-auto">
-       {tipodomanda ?   <StampaOpzioni optionsList={optionsList}opzioni={optionsList.domandachiusa} numopzioni={optionsList.numopzioni}></StampaOpzioni> 
+       {tipodomanda ?   <StampaOpzioni optionsList={optionsList}opzioni={optionsList.opzioni} numopzioni={optionsList.numopzioni}></StampaOpzioni> 
       : <Row>
-        <Form className="m-0" controlId="formBasicCheckbox">
+        <Form className="m-0">
          <Form.Control size="lg" type="text" placeholder="Large text" />                                                                                                                                              
           </Form>
           </Row> }
@@ -46,7 +46,7 @@ const OptionData = (props) => {
     return (
       <>
         <div className="flex-fill m-auto">
-         { lunghezzadomande > 1 && domanda.did !== lunghezzadomande-1 && <Button size="sm" variant="danger" className="shadow-none" onClick={()=>SpostaElementi(domanda.did, domanda.did+1)}> <ArrowDown /></Button> }
+         { lunghezzadomande > 1 && domanda.did !== (lunghezzadomande-1) && <Button size="sm" variant="danger" className="shadow-none" onClick={()=>SpostaElementi(domanda.did, domanda.did+1)}> <ArrowDown /></Button> }
          { lunghezzadomande > 1 &&  domanda.did !== 0 && <Button size="sm" variant="danger" className="shadow-none" onClick={()=>SpostaElementi(domanda.did, domanda.did-1 )}><ArrowUp/></Button> }
           <Button size="sm" variant="danger" className="shadow-none" ><PencilSquare /></Button>
           <Button size="sm" variant="danger" className="shadow-none" onClick={()=>CancellaDomanda(domanda.did)} ><Trash /></Button>

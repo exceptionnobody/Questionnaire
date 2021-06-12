@@ -7,21 +7,42 @@ const DomandaChiusa = (props)=>{
     const [max, setMax] = useState(undefined);
     const [numOpzioni, setNumOpzioni] = useState(0); 
     const [quesito, setQuesito] = useState('')
-
     const [opzioni, setOpzioni] = useState([]);
 
-    const testopzioni =[]
     const sottometti=(event)=>{
         event.preventDefault();
-         const domanda = {did: props.did, qid:idQuestionario, modificabile:true, quesito: quesito, min: min, max:max, numopzioni: numOpzioni, tipo:1,domandachiusa:testopzioni.map(t=>t) , temporaneo: 0}
-        props.aggiungiDomandaChiusa(domanda);
+         const domanda = {did: props.did, qid:idQuestionario, modificabile:true, quesito: quesito, min: min, max:max, numopzioni: numOpzioni, tipo:1, opzioni: opzioni}
+          setOpzioni([])
+          setNumOpzioni(0)
+         props.aggiungiDomanda(domanda);
     }
 
-    const setStateOpzion = (valore, ind) =>{
-        
-        testopzioni[ind]= {opzione:valore};
-        console.log(testopzioni)
+    const registraOpzione = (value, ind) =>{
+      setOpzioni(oldstate => {
+          const list = oldstate.map((item)=>{
+            if(item.indice === ind){
+              return { opzione: value, indice: ind}
+            }else{
+              return item
+            }
+          })
+          return list
+        })
     }
+
+    const settoIlNumeroOpzioni = (ev)=>{
+      let vett = []
+      const numOpzioni = parseInt(ev.target.value);
+
+      setNumOpzioni(numOpzioni)
+  
+      for(let i=0; i<ev.target.value; i++){
+        vett.push({opzione: "", indice:i})
+      }
+      setOpzioni(vett)
+
+    }
+
 return <Accordion defaultActiveKey="0">
   <Card>
     <Accordion.Toggle as={Card.Header} eventKey="0">
@@ -32,64 +53,62 @@ return <Accordion defaultActiveKey="0">
       <Card.Body>
           <Form onSubmit={sottometti}>
   <Form.Row>
-  <Form.Group as={Col} controlid="formGridEmail">
+  <Form.Group as={Col}>
       <Form.Label>Quesito</Form.Label>
       <Form.Control placeholder="Inserisci Quesito" onChange={(ev) => setQuesito(ev.target.value)} required/>
     </Form.Group>
-  <Form.Group as={Col} controlid="formGridState">
+  <Form.Group as={Col} >
       <Form.Label>Numero di Opzioni</Form.Label>
-      <Form.Control value={undefined}as="select" defaultValue="Choose..." onChange={(ev)=>{
-          
-          let vett = []
-          setNumOpzioni(ev.target.value)
-        for(let i=0; i<ev.target.value; i++){
-            vett.push({opzione: ""})
-        }
-        console.log(vett)
-        setOpzioni(vett)
-
-        }
-    
+      <Form.Control as="select" onChange={(ev)=>{settoIlNumeroOpzioni(ev)}  
     } required>
-        <option> </option>
-        <option>1</option>
-        <option>2</option>
-        <option>3</option>
-        <option>10</option>
+        <option >{' '}</option>
+        <option >1</option>
+        <option >2</option>
+        <option >3</option>
+        <option >4</option>
+        <option >5</option>
+        <option >10</option>
       </Form.Control>
     </Form.Group>
     <Form.Group as={Col} controlid="formGridState">
       <Form.Label>Min</Form.Label>
-      <Form.Control as="select" defaultValue="Choose..." onChange={(ev)=>setMin(ev.target.value)}>
-        <option>1</option>
+      <Form.Control as="select" onChange={(ev)=>setMin(+ev.target.value)} required>
+        <option>{' '}</option>
+        <option>0</option>
+        <option>1 </option>
         <option>2</option>
         <option>3</option>
+        <option>4</option>
       </Form.Control>
     </Form.Group>
     <Form.Group as={Col} controlid="formGridState">
       <Form.Label>Max</Form.Label>
-      <Form.Control as="select" defaultValue="Choose..." onChange={(ev)=>setMax(ev.target.value)}>
-        <option>1</option>
+      <Form.Control as="select" onChange={(ev)=>setMax(+ev.target.value)} required>
+        <option>{' '}</option>
+        <option >1</option>
         <option>2</option>
         <option>3</option>
         <option>4</option>
+        <option>5</option>
         <option>10</option>
       </Form.Control>
     </Form.Group>
     </Form.Row>
     <Form.Row>  
-{ opzioni!==null && opzioni.map((t, i) => {
+{ opzioni.length!==0 && opzioni.map((t, i) => {
     return <Row key={i} className="align-items-center">
     <Col xs="auto">
+    <Form.Group>
       <Form.Label htmlFor="inlineFormInput" visuallyhidden="true">
         Quesito {`${i}`}
       </Form.Label>
-      <Form.Control
+      <Form.Control type="text" name="description"
         className="mb-2"
         id={i}
-        placeholder="Jane Doe"
-        onChange={(ev)=>{setStateOpzion(ev.target.value, i)}}
+        placeholder="Insert Option"
+        onChange={(event)=>{registraOpzione(event.target.value, i)}}
       />
+      </Form.Group>
     </Col>
 
   </Row>
