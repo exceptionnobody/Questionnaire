@@ -2,14 +2,14 @@ import {ListGroup} from 'react-bootstrap/';
 
 /* get the list of labels to show, the one that is selected and the handler to notify a new selection */
 const Filters = (props) => {
-  const {items} = props;
-
+  const {items, filtraQuestionario} = props;
   return (
     <ListGroup as="div" variant="flush">
         {
-          Object.entries(items).map(([key, { label }]) => {
+          items.map(t => {
+            const valid= t.qid
             return (
-              <ListGroup.Item as="a" key={key} action>{label}</ListGroup.Item>
+              <ListGroup.Item as="a" key={t.qid} onClick={()=>{filtraQuestionario(valid); console.log(valid)}} action>{t.titolo}</ListGroup.Item>
             );
           })
         }

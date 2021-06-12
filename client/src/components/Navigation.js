@@ -1,9 +1,8 @@
-import { Navbar, Nav, Form, Button } from 'react-bootstrap/';
+import { Navbar, Nav, Form } from 'react-bootstrap/';
 import { PersonCircle, CheckAll } from 'react-bootstrap-icons';
 
 
 const Navigation = (props) => {
-  const {aggiungiQuestionario} =props;
 
   return (
     <Navbar bg="success" variant="dark" fixed="top">
@@ -15,11 +14,6 @@ const Navigation = (props) => {
       <Form inline className="my-0 mx-auto" action="#" role="search" aria-label="Quick search">
         <Form.Control className="mr-2" type="search" placeholder="Search" aria-label="Search query" />
       </Form>
-      <Nav className="ml-auto">
-      <Button  onClick={aggiungiQuestionario}>
-        <span>Aggiungi Questionario</span>
-      </Button >
-      </Nav>
      <Nav className="ml-auto">
         <Nav.Item>
           <Nav.Link href="#">

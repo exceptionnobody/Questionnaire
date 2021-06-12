@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import './App.css';
 
-import { Container, Row, Col } from 'react-bootstrap/';
+import { Container, Row, Col, Button } from 'react-bootstrap/';
 import ContentList from './components/ContentList'
 import Navigation from './components/Navigation';
 import Filters from './components/Filter'
@@ -29,7 +29,9 @@ function App() {
   //const MODAL = { CLOSED: -2, ADD: -1 };
   //const [setModal, setModalClosed] = useState(MODAL.CLOSED);
   const [questionari, setQuestionari] =useState([])
-  const [idQuestionario] =useState(0);
+  const [idQuestionari, setIdQuestionari] = useState(0)
+  const [questionarioselezionato, setQuestionarioselezionato] = useState({});
+
 
 /*   const handleClose = () => {
     setModalClosed(MODAL.CLOSED);
@@ -47,27 +49,40 @@ function App() {
   const compilaQuestionario = (name) => {
       const questionariovett = [...questionari]
 
-      questionariovett.push({titolo:name, qid:idQuestionario, aid:0})
+      questionariovett.push({titolo:name, qid:questionari.length, aid:0})
       setMode('compila')
       setQuestionari(questionariovett)
-      //setIdQuestionario(d=>d+1)
   }
-/* 
-  const handleSaveOrUpdate = ()=>{
+ 
+  const aggiungiDomandeQuestionario = (domandeQuestionarioProv)=>{
+    setIdQuestionari(s => s+1)
+    const tempQuestionario = [...questionari]
+    tempQuestionario[idQuestionari].domande = domandeQuestionarioProv
+    tempQuestionario[idQuestionari].numdomande = domandeQuestionarioProv.length
+    setQuestionari(tempQuestionario)
+    console.log(tempQuestionario)
+    setMode('view')
+    
+  } 
 
-  } */
+  const filtraQuestionario = (id) => {
+
+    setQuestionarioselezionato(questionari[id])
+  }
+
   return (
 
     <Container fluid>
-      <Navigation aggiungiQuestionario={aggiungiQuestionario} chiudiQuestionario={chiudiQuestionario}/>
+      <Navigation />
       <Row className="vh-100">
-      <QuestionarioManager questionari={questionari} setQuestionari={setQuestionari} idQuestionario={idQuestionario}
-      questionList={questionList} mode={mode} chiudiQuestionario={chiudiQuestionario} compilaQuestionario={compilaQuestionario} >
+      <QuestionarioManager questionari={questionari} setQuestionari={setQuestionari}  setMode={setMode} aggiungiDomandeQuestionario={aggiungiDomandeQuestionario}
+      questionList={questionList} questionarioselezionato={questionarioselezionato} filtraQuestionario={filtraQuestionario}
+      mode={mode} idQuestionari={idQuestionari} chiudiQuestionario={chiudiQuestionario} compilaQuestionario={compilaQuestionario} >
 
 
       </QuestionarioManager>
-      {/*{mode === "compila" && <Button variant="success" size="lg" className="fixed-right-bottom" onClick={() => setModalClosed(MODAL.ADD)}>+</Button>}
-      {(setModal !== MODAL.CLOSED) && <ModalForm task={{}} onSave={handleSaveOrUpdate} onClose={handleClose}></ModalForm>}*/}
+      {mode === "view" && <Button variant="success" size="lg" className="fixed-right-bottom" onClick={aggiungiQuestionario}>+</Button>}
+      {mode === "create" && <Button variant="success" size="lg" className="fixed-right-bottom btn btn-lg btn-danger" onClick={chiudiQuestionario}>X</Button>}
       </Row>
       
       </Container>
@@ -77,24 +92,44 @@ function App() {
 
 const QuestionarioManager = (props) => {
 
-  const {mode, chiudiQuestionario, compilaQuestionario, questionari, idQuestionario } = props;
+  const {mode,filtraQuestionario, idQuestionari, chiudiQuestionario, compilaQuestionario, questionari,  aggiungiDomandeQuestionario, questionarioselezionato } = props;
 
   const [ domande, setDomande] = useState([])
   //const [ domande, setDomande] = useState([...questionList])
   const [ showDomanda, setShowDomanda] = useState()
   const [did, setDid] = useState(0);
   const [modo, setModo] = useState('')
-  const filters = {
-    'Q1': { label: 'Q1', id: 'q1'},
-    'Q2': { label: 'Q2', id: 'q2'},
-    'Q3': { label: 'Q3', id: 'q3' }
-  };
-
+  const [numerodomande, setNumeroDomande] = useState(0);
   const pubblicaQuestionario= () =>{
-    console.log("test")
-    if(!domande.length)
-      console.log("Inserire delle domande")
-  }
+    console.log("test pubblica Questionario")
+    if(domande.length >1){
+
+     const tempDomande = [...domande]
+
+     let newId = numerodomande;
+
+     for(const v of tempDomande){
+       v.modificabile=false
+       if(v.qid !== 0){
+            v.did = newId
+            newId++;
+       }
+     }
+
+
+     setDomande([])
+     
+     setDid(0)
+     setModo('view')
+
+
+     console.log(tempDomande)
+     aggiungiDomandeQuestionario(tempDomande)
+    }else{
+
+    }
+
+    }
 
   const opzioneDomande = {
     'D1': { label: 'Aggiungi Domanda Chiusa', id: 'd1', fnc: ()=>{setShowDomanda(true); setModo("chiusa")}},
@@ -115,6 +150,7 @@ const QuestionarioManager = (props) => {
         setShowDomanda(false);
         setModo("temp")
         setDid(d => d+1)
+        setNumeroDomande(e => e+1)
   }
 
   const SpostaElementi = function(old_index, new_index) {
@@ -133,18 +169,38 @@ const QuestionarioManager = (props) => {
   }
 
 
+  const CancellaDomanda = (index) =>{
+
+    const tempDomande = domande.filter(t => t.did !== index);
+    let i=0;
+    for(const v of tempDomande){
+      v.did=i;
+      i++; 
+    }
+    i++
+    console.log(tempDomande)
+    setDid(i)
+    setDomande(tempDomande)
+    setNumeroDomande(e => e-1)
+  }
+
   return (<>
         <Col xs={3} bg="light" className="below-nav" id="left-sidebar">
-          {mode === 'view' && <Filters items={filters} />}
+          {mode === 'view' && <Filters items={questionari} filtraQuestionario={filtraQuestionario}/>}
           {mode === 'compila' && <DomandeMenu items={opzioneDomande} aggiungiDomandaAperta={aggiungiDomandaAperta} aggiungiDomandaChiusa={aggiungiDomandaChiusa}/>}
         </Col>      
       <Col xs={9} className="below-nav">
-        {mode ==="view" && <h2 className="pb-3">Filter: <small className="text-muted">Test</small></h2>}
+        {mode ==="view" && <><h2 className="pb-3">{questionarioselezionato.titolo} <small className="text-muted"></small></h2>
+                              <ContentList  questionList={questionarioselezionato.domande?questionarioselezionato.domande:[]}  SpostaElementi={SpostaElementi}  />
+                              </>}
         {mode ==="create" && <FormPersonale chiudiQuestionario={chiudiQuestionario} compilaQuestionario={compilaQuestionario}/> }
-        {mode === "compila" && <h2 className="pb-3">Questionario: <small className="text-muted">{questionari[idQuestionario].titolo}</small></h2>}
-        {modo === "aperta" && showDomanda && <DomandaAperta did={did} aggiungiDomandaAperta={aggiungiDomandaAperta}/>}
-        {modo === "chiusa" && showDomanda && <DomandaChiusa did={did} aggiungiDomandaChiusa={aggiungiDomandaChiusa} />}
-        {modo === "temp" && !showDomanda && <ContentList  questionList={domande}   SpostaElementi={SpostaElementi} />}
+        {mode === "compila" && <><h3 className="pb-3">Questionario: <span className="text-muted">{questionari[idQuestionari].titolo}</span>
+        </h3>
+        
+        </>}
+        {modo === "aperta" && showDomanda && <DomandaAperta did={did} aggiungiDomandaAperta={aggiungiDomandaAperta} idQuestionario={idQuestionari}/>}
+        {modo === "chiusa" && showDomanda && <DomandaChiusa did={did} aggiungiDomandaChiusa={aggiungiDomandaChiusa} idQuestionario={idQuestionari}/>}
+        {modo === "temp" && !showDomanda && <ContentList  questionList={domande}   SpostaElementi={SpostaElementi} CancellaDomanda={CancellaDomanda} />}
         {/*<ContentList  questionList={domande}  SpostaElementi={SpostaElementi}  />*/}
      </Col>
      </>);

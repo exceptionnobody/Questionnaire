@@ -19,6 +19,20 @@ app.use(express.json());
 
 
 
+app.get('/api/questionari', async (req, res) => {
+
+  try {
+    const result = await dao.getAllQuestionari();
+    if (result.error)
+        res.status(404).json(result);
+    else
+        res.json(result);
+} catch (err) {
+    res.status(503).json({error: `Database error during query execution.`});
+}
+
+})
+
 
 app.get('/api/questions/:id', async (req, res) => {
   try {

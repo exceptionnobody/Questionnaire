@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {Accordion, Card, Form, Button, Col, Row} from 'react-bootstrap'
 
 const DomandaChiusa = (props)=>{
-
+    const {idQuestionario} = props
     const [min, setMin] = useState(undefined); 
     const [max, setMax] = useState(undefined);
     const [numOpzioni, setNumOpzioni] = useState(0); 
@@ -13,7 +13,7 @@ const DomandaChiusa = (props)=>{
     const testopzioni =[]
     const sottometti=(event)=>{
         event.preventDefault();
-         const domanda = {did: props.did, quesito: quesito, min: min, max:max, numopzioni: numOpzioni, tipo:1,domandachiusa:testopzioni.map(t=>t) , temporaneo: 0}
+         const domanda = {did: props.did, qid:idQuestionario, modificabile:true, quesito: quesito, min: min, max:max, numopzioni: numOpzioni, tipo:1,domandachiusa:testopzioni.map(t=>t) , temporaneo: 0}
         props.aggiungiDomandaChiusa(domanda);
     }
 
@@ -32,11 +32,11 @@ return <Accordion defaultActiveKey="0">
       <Card.Body>
           <Form onSubmit={sottometti}>
   <Form.Row>
-  <Form.Group as={Col} controlId="formGridEmail">
+  <Form.Group as={Col} controlid="formGridEmail">
       <Form.Label>Quesito</Form.Label>
       <Form.Control placeholder="Inserisci Quesito" onChange={(ev) => setQuesito(ev.target.value)} required/>
     </Form.Group>
-  <Form.Group as={Col} controlId="formGridState">
+  <Form.Group as={Col} controlid="formGridState">
       <Form.Label>Numero di Opzioni</Form.Label>
       <Form.Control value={undefined}as="select" defaultValue="Choose..." onChange={(ev)=>{
           
@@ -58,7 +58,7 @@ return <Accordion defaultActiveKey="0">
         <option>10</option>
       </Form.Control>
     </Form.Group>
-    <Form.Group as={Col} controlId="formGridState">
+    <Form.Group as={Col} controlid="formGridState">
       <Form.Label>Min</Form.Label>
       <Form.Control as="select" defaultValue="Choose..." onChange={(ev)=>setMin(ev.target.value)}>
         <option>1</option>
@@ -66,7 +66,7 @@ return <Accordion defaultActiveKey="0">
         <option>3</option>
       </Form.Control>
     </Form.Group>
-    <Form.Group as={Col} controlId="formGridState">
+    <Form.Group as={Col} controlid="formGridState">
       <Form.Label>Max</Form.Label>
       <Form.Control as="select" defaultValue="Choose..." onChange={(ev)=>setMax(ev.target.value)}>
         <option>1</option>
