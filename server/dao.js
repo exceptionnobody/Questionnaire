@@ -66,13 +66,13 @@ exports.getAllQuestionari = () => {
 
 exports.createQuestionario = (quest) => {
   return new Promise((resolve, reject) => {
-    const sql = `INSERT INTO questionari (admin, titolo, numdomande) VALUES(?, ?, ?)`;
-    db.run(sql, [quest.admin, quest.titolo, quest.numdomande], function (err) {
+    const sql = `INSERT INTO questionari (qid, admin, titolo, numdomande) VALUES(?, ?, ?, ?)`;
+    db.run(sql, [quest.qid, quest.admin, quest.titolo, quest.numdomande], function (err) {
       if (err) {
         reject(err);
-        return;
       }
       resolve(this.lastID);
+      console.log(`A row has been inserted with rowid ${this.lastID}`);
     });
   });
 };

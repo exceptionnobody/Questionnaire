@@ -72,8 +72,8 @@ app.post('/api/questionari', async (req, res) => {
  // console.log(domande)
   console.log(questionario)
   
-  dao.createQuestionario(questionario).then( ()=>{
-    
+  dao.createQuestionario(questionario).then( (id)=>{
+    /*
       let vett=[...domande]
       for(const v of vett){ 
             if(v[tipo] === 1){
@@ -90,8 +90,8 @@ app.post('/api/questionari', async (req, res) => {
               //await  dao.inserisciDomande(v)
             }
 
-      }
-    res.status(201).end();
+      }*/
+    res.status(201).json(id).end();
     }).catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
 
 });

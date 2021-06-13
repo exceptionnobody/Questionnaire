@@ -3,7 +3,7 @@
 const sqlite = require('sqlite3');
 
 // open the database
-const db = new sqlite.Database('./server/tabelle.db', (err) => {
+const db = new sqlite.Database('tabelle.db', (err) => {
   if (err) throw err;
 });
 
