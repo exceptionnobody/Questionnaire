@@ -3,7 +3,7 @@ import { React, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import './App.css';
-
+import API from './API/API'
 import { Container, Row, Col, Button } from 'react-bootstrap/';
 import ContentList from './components/ContentList'
 import Navigation from './components/Navigation';
@@ -39,11 +39,12 @@ function App() {
     setMode('view');
   }
 
-  const compilaQuestionario = (name) => {
+  const compilaQuestionario = (nameq) => {
       const questionariovett = [...questionari]
 
-      questionariovett.push({titolo:name, qid:idQuestionari, aid:0})
+      questionariovett[idQuestionari] = {qid: idQuestionari , titolo: nameq, admin:1}
       setQuestionari(questionariovett)
+      console.log(questionariovett)
       setMode('compila')
   }
  
@@ -54,7 +55,8 @@ function App() {
     tempQuestionario[idQuestionari].numdomande = domandeQuestionarioProv.length
     setQuestionari(tempQuestionario)
     setMode('view')
-    
+
+    API.inserisciUnNuovoQuestionario(tempQuestionario[idQuestionari])
   } 
 
   const filtraQuestionario = (id) => {
@@ -115,9 +117,6 @@ const QuestionarioManager = (props) => {
      
      setDid(0)
      setModo('view')
-
-     console.log("Prima di Pubblicare le domande e di conseguenza il questionario: ")
-     console.log(tempDomande)
      aggiungiDomandeQuestionario(tempDomande)
     }else{
 

@@ -58,26 +58,49 @@ app.get('/api/answer/:id', async (req, res) => {
   }
 });
 
-app.post('/api/questionari/', async (req, res) => {
+app.post('/api/questionari', async (req, res) => {
 
   const questionario = {
+    qid: req.body.qid,
     admin: req.body.admin,
     titolo: req.body.titolo,
-    numdomande: req.body.numdomande,
+    numdomande: req.body.numdomande
   };
 
   const domande =  req.body.domande
 
-  console.log(domande)
-  try {
-    await dao.createQuestionario(questionario);
-    await dao.inserisciDomande(domande)
+ // console.log(domande)
+  console.log(questionario)
+  
+  dao.createQuestionario(questionario).then( ()=>{
+    
+      let vett=[...domande]
+      for(const v of vett){ 
+            if(v[tipo] === 1){
+              for(const j of v.opzioni){
+                const sdf = `opzione${j[indice]+1}`
+                vett[sdf] =j[opzione]
+              }
+              console.log("Passo da QUI")
+              delete v.opzioni
+              const versionedomanda = {...v, ...vett}
+             //await dao.inserisciDomande(versionedomanda)
+            }else{
+              console.log("Sono Qui")
+              //await  dao.inserisciDomande(v)
+            }
+
+      }
     res.status(201).end();
-  } catch(err) {
-    res.status(503).json({error: `Database error during the creation of task (${task.description}).`});
-  }
+    }).catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
 
 });
+
+app.delete("/api/questionari", async (req, res) => {
+  
+  await dao.cancellaQuestionari().then(() => {res.status(200).end()})
+  .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
+})
 
 // activate the server
 app.listen(port, () => {

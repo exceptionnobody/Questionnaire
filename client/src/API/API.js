@@ -1,14 +1,15 @@
 const baseURL = "/api";
 
 async function inserisciUnNuovoQuestionario(questionario){
-    let url = "/tasks";
+    let url = "/questionari";
+    console.log(questionario)
     return new Promise((resolve, reject) => {
     fetch(baseURL+url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(questionario),
+        body: JSON.stringify({...questionario, ...questionario.domande}),
     }).then((response) => {
         if (response.ok) {
           resolve(null);
@@ -21,3 +22,14 @@ async function inserisciUnNuovoQuestionario(questionario){
       }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) }); // connection errors
 });
 }
+
+
+
+
+
+
+
+
+const API = {inserisciUnNuovoQuestionario};
+
+export default API;
