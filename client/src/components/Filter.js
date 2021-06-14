@@ -6,8 +6,8 @@ const Filters = (props) => {
   return (
     <ListGroup as="div" variant="flush">
         {
-          items.map(t => {
-            const valid= t.qid
+          items.map((t,i) => {
+            const valid= i
             return (
               <ListGroup.Item as="a" key={t.qid} onClick={()=>{filtraQuestionario(valid); console.log(valid)}} action>{t.titolo}</ListGroup.Item>
             );

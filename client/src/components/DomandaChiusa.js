@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {Accordion, Card, Form, Button, Col, Row} from 'react-bootstrap'
 
 const DomandaChiusa = (props)=>{
-    const {idQuestionario} = props
+    const {Qid} = props
     const [min, setMin] = useState(undefined); 
     const [max, setMax] = useState(undefined);
     const [numOpzioni, setNumOpzioni] = useState(0); 
@@ -19,7 +19,7 @@ const DomandaChiusa = (props)=>{
 
         }
         
-         domanda = {did: props.did, qid:idQuestionario, modificabile:true, quesito: quesito, min: min, max:max, numopzioni: numOpzioni, tipo:1, opzioni: opzioni.map(t=>t), ...domanda}
+         domanda = {did: props.did, qid:Qid, modificabile:true, quesito: quesito, min: min, max:max, numopzioni: numOpzioni, tipo:1, opzioni: opzioni.map(t=>t), ...domanda}
          setOpzioni([])
          setNumOpzioni(0)
          props.aggiungiDomanda(domanda);

@@ -1,22 +1,43 @@
 const db = require('./db');
 
 // ottiene le domande dal questionario identified by {id}
-exports.getDomande = (idQuestionario) => {
+exports.getDomande = (obj) => {
   return new Promise((resolve, reject) => {
-    const sql = `SELECT * FROM domande  WHERE questionario=?`;
-    db.all(sql, [idQuestionario], (err, row) => {
+    const sql = `SELECT domande.*
+      FROM questionari INNER JOIN domande ON  questionari.qid = domande.questionario 
+      WHERE admin = ?   
+    `;
+    db.all(sql, [obj], (err, rows) => {
       if (err) {
         reject(err);
         return;
       }
-      if (row == undefined) {
+      if (rows == undefined) {
         resolve({ error: 'Task not found.' });
       } else {
-        resolve(row);
+        resolve(rows);
       }
     });
   })
 }
+
+exports.getTutteDomande = () => {
+  return new Promise((resolve, reject) => {
+    const sql = `SELECT * FROM domande`;
+    db.all(sql, [], (err, rows) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      if (rows == undefined) {
+        resolve({ error: 'Task not found.' });
+      } else {
+        resolve(rows);
+      }
+    });
+  })
+}
+
 
 exports.getOptions = (id) => {
   return new Promise((resolve, reject) => {
@@ -39,11 +60,11 @@ exports.getOptions = (id) => {
   })
 }
 
-exports.getAllQuestionari = () => {
+exports.getAllMyQuestionnaire = (admin) => {
   return new Promise((resolve, reject) => {
 
-    const sql = "SELECT * FROM questionari";
-    db.all(sql, [], (err, rows) => {
+    const sql = "SELECT * FROM questionari WHERE admin=?";
+    db.all(sql, [admin], (err, rows) => {
       if (err) {
         reject(err);
         return;
@@ -56,7 +77,6 @@ exports.getAllQuestionari = () => {
           titolo: t.titolo,
           numdomande: t.numdomande
         }))
-        console.log(questionari)
         resolve(questionari);
       }
     });
@@ -64,10 +84,36 @@ exports.getAllQuestionari = () => {
   })
 }
 
+exports.getAllQuestionnaire = () => {
+  return new Promise((resolve, reject) => {
+
+    const sql = "SELECT * FROM questionari";
+    db.all(sql, [admin], (err, rows) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      if (rows == undefined) {
+        resolve({ error: 'Task not found.' });
+      } else {
+        const questionari = rows.map(t => ({
+          qid: t.qid,
+          titolo: t.titolo,
+          numdomande: t.numdomande
+        }))
+        resolve(questionari);
+      }
+    });
+
+  })
+}
+
+
+
 exports.createQuestionario = (quest) => {
   return new Promise((resolve, reject) => {
-    const sql = `INSERT INTO questionari (qid, admin, titolo, numdomande) VALUES(?, ?, ?, ?)`;
-    db.run(sql, [quest.qid, quest.admin, quest.titolo, quest.numdomande], function (err) {
+    const sql = `INSERT INTO questionari (admin, titolo, numdomande) VALUES(?, ?, ?)`;
+    db.run(sql, [quest.admin, quest.titolo, quest.numdomande], function (err) {
       if (err) {
         reject(err);
       }
@@ -79,8 +125,8 @@ exports.createQuestionario = (quest) => {
 
 exports.inserisciDomandeAperta = (domanda) => {
   return new Promise((resolve, reject) => {
-    const sql = "INSERT INTO domande(did, questionario, quesito, tipo, numopzioni, min, max) VALUES(?,?,?,?,?,?,?)";
-    db.run(sql, [domanda.did, domanda.qid, domanda.quesito, domanda.tipo, domanda.numopzioni, domanda.min, domanda.max], function (err) {
+    const sql = "INSERT INTO domande(questionario, quesito, tipo, numopzioni, min, max) VALUES(?,?,?,?,?,?)";
+    db.run(sql, [domanda.qid, domanda.quesito, domanda.tipo, domanda.numopzioni, domanda.min, domanda.max], function (err) {
       if (err) {
         reject(err);
       }
@@ -93,8 +139,8 @@ exports.inserisciDomandeAperta = (domanda) => {
 
 exports.inserisciDomandeChiusa = (domanda) => {
   return new Promise((resolve, reject) => {
-    const sql = "INSERT INTO domande(did, questionario, quesito, tipo, numopzioni, min, max, opzione1, opzione2, opzione3, opzione4, opzione5, opzione6, opzione7, opzione8, opzione9, opzione10) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    db.run(sql, [domanda.did, domanda.qid, domanda.quesito, domanda.tipo, domanda.numopzioni, domanda.min, domanda.max, domanda.opzione1?domanda.opzione1:null, domanda.opzione2? domanda.opzione2:null, domanda.opzione3?domanda.opzione3:null, domanda.opzione4?domanda.opzione4:null, domanda.opzione5?domanda.opzione5:null, domanda.opzione6?domanda.opzione6:null, domanda.opzione7?domanda.opzione7:null, domanda.opzione8?domanda.opzione8:null, domanda.opzione9?domanda.opzione9:null, domanda.opzione10?domanda.opzione10:null], function (err) {
+    const sql = "INSERT INTO domande(questionario, quesito, tipo, numopzioni, min, max, opzione1, opzione2, opzione3, opzione4, opzione5, opzione6, opzione7, opzione8, opzione9, opzione10) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    db.run(sql, [domanda.qid, domanda.quesito, domanda.tipo, domanda.numopzioni, domanda.min, domanda.max, domanda.opzione1?domanda.opzione1:null, domanda.opzione2? domanda.opzione2:null, domanda.opzione3?domanda.opzione3:null, domanda.opzione4?domanda.opzione4:null, domanda.opzione5?domanda.opzione5:null, domanda.opzione6?domanda.opzione6:null, domanda.opzione7?domanda.opzione7:null, domanda.opzione8?domanda.opzione8:null, domanda.opzione9?domanda.opzione9:null, domanda.opzione10?domanda.opzione10:null], function (err) {
       if (err) {
         reject(err);
       }

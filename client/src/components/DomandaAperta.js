@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {Accordion, Card, Form, Button, Col} from 'react-bootstrap'
 
 const DomandaAperta = (props)=>{
-    const {idQuestionario} = props
+    const {Qid} = props
     const [obbligatoria, setObbligatoria] = useState(false); 
     const [quesito, setQuesito] = useState('')
     
@@ -17,7 +17,7 @@ const DomandaAperta = (props)=>{
             max=1;
         }
 
-        const domanda = {did: props.did, qid: idQuestionario, modificabile:true, quesito: quesito, min: min, max:max, numopzioni: 1, tipo:0 }
+        const domanda = {did: props.did, qid: Qid, modificabile:true, quesito: quesito, min: min, max:max, numopzioni: 1, tipo:0 }
         props.aggiungiDomanda(domanda);
     }
 return <Accordion defaultActiveKey="0">

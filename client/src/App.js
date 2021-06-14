@@ -1,4 +1,4 @@
-import { React, useState } from 'react';
+import { React, useState, useEffect } from 'react';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -14,26 +14,22 @@ import DomandaAperta from './components/DomandaAperta';
 import DomandaChiusa from './components/DomandaChiusa';
 //import { BrowserRouter as Router, Route, useParams, useHistory, Switch, Redirect } from 'react-router-dom';
 
-const questionList = [
-  { did: 0, quesito: "Domanda 3 Q1 dopp", important: false, private: false, numopzioni:1 ,tipo: 0, opzioneaperta: "OPTAPERTA" },
-  { did: 1, quesito: "Domanda 1 Q1", important: false, private: true, min:0, max:1, numopzioni:6, tipo: 1, domandachiusa: [{opzione: "OPT0"},{opzione: "OPT1"}, {opzione: "OPT2"}, {opzione: "OPT3"}, {opzione:"OPT4"},{opzione: "OPT5"}]},
-  { did: 2, quesito: "Domanda 2 Q1", important: false, private: true, min:1, max:1, numopzioni:4, tipo: 1, domandachiusa: [{opzione: "OPT5"}, {opzione: "OPT6"}, {opzione: "OPT7"}, {opzione:"OPT8"}]},
-  { did: 3, quesito: "Domanda 3 Q1", important: false, private: false, numopzioni:1 ,tipo: 0, opzioneaperta: "OPTAPERTA" },
-  { did: 4, quesito: "Domanda 4 Q1", important: true, private: true, numopzioni:1 ,tipo: 0, opzioneaperta: "OPTAPERTA" },
-
-];
-
 function App() {
 
-  const [mode, setMode]=useState('view')
+  const [mode, setMode]=useState('precarica')
   const [idQuestionari, setIdQuestionari] = useState(0)
   const [questionari, setQuestionari] =useState([])
   const [questionarioselezionato, setQuestionarioselezionato] = useState({});
   const [contaDomande, setContaDomande] = useState(0)
-
+  const [loading, setLoading] = useState(true);
+  const [domande, setDomande] = useState([])
+  const [visualizzaDomande, setVisualizzaDomande] = useState([])
+  const [adminId] = useState(2)
   const aggiungiQuestionario = ()=>{
       setMode('create');
   }
+
+
 
   const chiudiQuestionario = () =>{
     setMode('view');
@@ -42,9 +38,17 @@ function App() {
   const compilaQuestionario = (nameq) => {
       const questionariovett = [...questionari]
 
-      questionariovett[idQuestionari] = {qid: idQuestionari , titolo: nameq, admin:1}
-      setQuestionari(questionariovett)
-      setMode('compila')
+      questionariovett[idQuestionari] = {qid: idQuestionari , titolo: nameq, admin:adminId, numdomande:0}
+
+      API.inserisciUnNuovoQuestionario(questionariovett[idQuestionari]).then(result => {
+        questionariovett[idQuestionari].qid = result;
+        
+     console.log("QID nuovo questionario: "+ questionariovett[idQuestionari].qid)
+     console.log(questionariovett[idQuestionari])
+        setQuestionari(questionariovett) 
+        setMode('compila')
+      }      
+        )
       
   }
  
@@ -54,33 +58,99 @@ function App() {
     tempQuestionario[idQuestionari].domande = domandeQuestionarioProv
     tempQuestionario[idQuestionari].numdomande = domandeQuestionarioProv.length
     setQuestionari(tempQuestionario)
-    console.log(tempQuestionario)
-    setContaDomande(s => s+domandeQuestionarioProv.length)
-    API.inserisciUnNuovoQuestionario(tempQuestionario[idQuestionari]).then(()=>{
-
-      for(const vv of domandeQuestionarioProv){
-        if(vv.tipo === 0)
-           API.inserisciUnNuovaDomandaAperta(vv)
+    //console.log(tempQuestionario)
+    
+    for(const vv of domandeQuestionarioProv){
+      
+      if(vv.tipo === 0)
+           API.inserisciUnNuovaDomandaAperta(vv).then(did=> {vv.did=did; })
        else
-           API.inserisciUnNuovaDomandaChiusa(vv)
+           API.inserisciUnNuovaDomandaChiusa(vv).then(did=> {vv.did=did;})
       }
-    })
-    setMode('view')
+      console.log(tempQuestionario)
+      setQuestionari(tempQuestionario)
+      setContaDomande(s => s+domandeQuestionarioProv.length)  
+      setMode('view')
   } 
 
   const filtraQuestionario = (id) => {
 
     setQuestionarioselezionato(questionari[id])
+    console.log("QID Questionario selezionato "+questionari[id].qid)
+    setVisualizzaDomande(domande.filter(d => d.questionario === questionari[id].qid))
   }
 
+  useEffect(() => {
+
+    async function caricaQuestionari() {
+
+      const result = API.ottieniMieiQuestionari(adminId)
+      
+      return result
+           
+    }
+
+    if (loading) {
+
+      caricaQuestionari().then((result) => { 
+        
+       console.log(result) 
+       setQuestionari(result);
+       setIdQuestionari(result.length-1); 
+        setLoading(false) 
+        setMode('view') 
+      })
+
+    }
+
+  }, [loading])
+
+  useEffect(() => {
+
+    async function caricaDomande() {
+
+      const result = API.ottieniDomande(adminId)
+      
+      return result
+    }
+      
+    if (questionari.length || contaDomande) {
+      caricaDomande().then(result => {
+
+        for(const v of result){
+          if(v.tipo){
+            let arr = []
+            for(let p=0; p<v.numopzioni; p++){
+              let stringaopzione = `opzione${p+1}`
+              arr.push({opzione: v[stringaopzione]})
+            }
+            v.opzioni = [...arr]
+          }
+        }
+        console.log(result)
+
+
+        setDomande(result); 
+        setContaDomande(result.length)
+      })
+    }
+
+  }, [questionari.length, contaDomande])
+
+/*
+        for(const v of result.entries()){
+          console.log(v)
+         v.domande = await API.ottieniDomande(v.qid) 
+        }
+*/
   return (
 
     <Container fluid>
       <Navigation />
       <Row className="vh-100">
-      <QuestionarioManager contaDomande={contaDomande} 
+      <QuestionarioManager contaDomande={contaDomande} myDomande={visualizzaDomande}
       questionari={questionari} setQuestionari={setQuestionari}  setMode={setMode} aggiungiDomandeQuestionario={aggiungiDomandeQuestionario}
-      questionList={questionList} questionarioselezionato={questionarioselezionato} filtraQuestionario={filtraQuestionario}
+      questionarioselezionato={questionarioselezionato} filtraQuestionario={filtraQuestionario}
       mode={mode} idQuestionari={idQuestionari} chiudiQuestionario={chiudiQuestionario} compilaQuestionario={compilaQuestionario} >
 
 
@@ -96,7 +166,7 @@ function App() {
 
 const QuestionarioManager = (props) => {
 
-  const {mode, contaDomande, filtraQuestionario, idQuestionari, chiudiQuestionario, compilaQuestionario, questionari,  aggiungiDomandeQuestionario, questionarioselezionato } = props;
+  const {mode, contaDomande, filtraQuestionario, myDomande, idQuestionari, chiudiQuestionario, compilaQuestionario, questionari,  aggiungiDomandeQuestionario, questionarioselezionato } = props;
 
   const [ domande, setDomande] = useState([])
   //const [ domande, setDomande] = useState([...questionList])
@@ -179,15 +249,15 @@ const QuestionarioManager = (props) => {
         </Col>      
       <Col xs={9} className="below-nav">
         {mode ==="view" && <><h2 className="pb-3">{questionarioselezionato.titolo} <small className="text-muted"></small></h2>
-                              <ContentList  questionList={questionarioselezionato.domande?questionarioselezionato.domande:[]}  SpostaElementi={SpostaElementi}  />
+                              <ContentList  questionList={myDomande}  SpostaElementi={SpostaElementi}  />
                               </>}
         {mode ==="create" && <FormPersonale chiudiQuestionario={chiudiQuestionario} compilaQuestionario={compilaQuestionario}/> }
         {mode === "compila" && <><h3 className="pb-3">Questionario: <span className="text-muted">{questionari[idQuestionari].titolo}</span>
         </h3>
         
         </>}
-        {modo === "aperta" && showDomanda && <DomandaAperta did={did} aggiungiDomanda={aggiungiDomanda} idQuestionario={idQuestionari}/>}
-        {modo === "chiusa" && showDomanda && <DomandaChiusa did={did} aggiungiDomanda={aggiungiDomanda} idQuestionario={idQuestionari}/>}
+        {modo === "aperta" && showDomanda && <DomandaAperta did={did} aggiungiDomanda={aggiungiDomanda} Qid={questionari[idQuestionari].qid}/>}
+        {modo === "chiusa" && showDomanda && <DomandaChiusa did={did} aggiungiDomanda={aggiungiDomanda} Qid={questionari[idQuestionari].qid}/>}
         {modo === "temp" && !showDomanda && <ContentList  questionList={domande}   SpostaElementi={SpostaElementi} CancellaDomanda={CancellaDomanda} />}
         {/*<ContentList  questionList={domande}  SpostaElementi={SpostaElementi}  />*/}
      </Col>

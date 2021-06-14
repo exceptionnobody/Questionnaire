@@ -16,13 +16,25 @@ app.use(morgan('dev'));
 app.use(express.json());
 
 
+app.get("/api/info", async (req, res)=>{
 
+})
 
-
+// Parametrica /api/questionari?admin=?
 app.get('/api/questionari', async (req, res) => {
 
   try {
-    const result = await dao.getAllQuestionari();
+    
+    let result
+    const idAdmin = {
+      admin: req.query.admin
+    }
+
+    if(idAdmin.admin.toString()!== "null")
+      result = await dao.getAllMyQuestionnaire(idAdmin.admin);
+    else
+      result = await dao.getAllQuestionnaire();
+
     if (result.error)
         res.status(404).json(result);
     else
@@ -33,11 +45,22 @@ app.get('/api/questionari', async (req, res) => {
 
 })
 
+// Query parametrica /api/domande?qid=valore
+app.get('/api/domande', async (req, res) => {
 
-app.get('/api/domande/:id', async (req, res) => {
+
   try {
-      const result = await dao.getDomande(req.params.id);
-      if (result.error)
+    let result;
+
+    const idQuest = req.query.admin
+    
+
+    if(idQuest.toString() !== "null")
+      result = await dao.getDomande(parseInt(idQuest));
+    else
+      result = await dao.getTutteDomande()
+     
+    if (result.error)
           res.status(404).json(result);
       else
           res.json(result);
@@ -70,9 +93,9 @@ app.post('/api/questionari', async (req, res) => {
  // console.log(domande)
  console.log(questionario)
  
- dao.createQuestionario(questionario).then((id)=>{
-   console.log("inserimento andato a buon fine "+ id)
-   res.status(201).json("ok").end();
+ dao.createQuestionario(questionario).then((qid)=>{
+   console.log("inserimento andato a buon fine "+ qid)
+   res.status(201).json(qid).end()
  }).catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
 
  })
@@ -92,9 +115,9 @@ app.post('/api/questionari', async (req, res) => {
 }
 console.log(domanda)
 
- dao.inserisciDomandeAperta(domanda).then((id)=>{
-   console.log("inserimento andato a buon fine "+ id)
-   res.status(201).json("ok").end();
+ dao.inserisciDomandeAperta(domanda).then((did)=>{
+
+    res.status(201).json(did).end();
  }).catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
 
  })
@@ -116,9 +139,9 @@ console.log(domanda)
  }
  console.log(domanda)
  
-  dao.inserisciDomandeChiusa(domanda).then((id)=>{
-    console.log("inserimento andato a buon fine "+ id)
-    res.status(201).json("ok").end();
+  dao.inserisciDomandeChiusa(domanda).then((did)=>{
+    console.log("inserimento andato a buon fine "+ did)
+    res.status(201).json(did).end();
   }).catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
  
   })

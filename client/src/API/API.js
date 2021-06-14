@@ -12,7 +12,7 @@ async function inserisciUnNuovoQuestionario(questionario){
         body: JSON.stringify(questionario),
     }).then((response) => {
         if (response.ok) {
-          resolve(null);
+          resolve(response.json());
         } else {
           // analyze the cause of error
           response.json()
@@ -35,7 +35,7 @@ async function inserisciUnNuovaDomandaAperta(domanda){
       body: JSON.stringify(domanda)
   }).then((response) => {
       if (response.ok) {
-        resolve(null);
+        resolve(response.json());
       } else {
         // analyze the cause of error
         response.json()
@@ -57,7 +57,7 @@ async function inserisciUnNuovaDomandaChiusa(domanda){
       body: JSON.stringify(domanda)
   }).then((response) => {
       if (response.ok) {
-        resolve(null);
+        resolve(response.json());
       } else {
         // analyze the cause of error
         response.json()
@@ -69,10 +69,39 @@ async function inserisciUnNuovaDomandaChiusa(domanda){
 }
 
 
+async function ottieniMieiQuestionari(admin) {
+  let url = "/questionari?admin=";
+  try{
+  const response = await fetch(baseURL+url+admin);
+  const tasksJson = await response.json();
+  if(response.ok){
+      return tasksJson.map((t) => Object.assign({}, t));
+  } else {
+      throw tasksJson;  // An object with the error coming from the server
+  }
+}catch(err){
+    console.log(err)
+}
+}
+
+async function ottieniDomande(qid) {
+  let url = "/domande?admin=";
+  try{
+  const response = await fetch(baseURL+url+qid);
+  const tasksJson = await response.json();
+  if(response.ok){
+      return tasksJson.map((t) => Object.assign({}, t));
+  } else {
+      throw tasksJson;  // An object with the error coming from the server
+  }
+}catch(err){
+    console.log(err)
+}
+}
 
 
 
-
-const API = {inserisciUnNuovoQuestionario, inserisciUnNuovaDomandaAperta, inserisciUnNuovaDomandaChiusa};
+const API = {ottieniDomande, 
+  inserisciUnNuovoQuestionario, inserisciUnNuovaDomandaAperta, inserisciUnNuovaDomandaChiusa, ottieniMieiQuestionari};
 
 export default API;
