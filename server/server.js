@@ -59,7 +59,7 @@ app.get('/api/answer/:id', async (req, res) => {
 });
 
 app.post('/api/questionari', async (req, res) => {
-
+ 
   const questionario = {
     qid: req.body.qid,
     admin: req.body.admin,
@@ -67,34 +67,63 @@ app.post('/api/questionari', async (req, res) => {
     numdomande: req.body.numdomande
   };
 
-  const domande =  req.body.domande
-
  // console.log(domande)
-  console.log(questionario)
+ console.log(questionario)
+ 
+ dao.createQuestionario(questionario).then((id)=>{
+   console.log("inserimento andato a buon fine "+ id)
+   res.status(201).json("ok").end();
+ }).catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
+
+ })
+
+ app.post('/api/domandeaperte', async (req, res) => {
+ 
+ const domanda = {
+
+  did: req.body.did,
+  qid: req.body.qid,
+  quesito: req.body.quesito,
+  min: req.body.min,
+  max: req.body.max,
+  tipo: req.body.tipo,
+  numopzioni: req.body.numopzioni
   
-  dao.createQuestionario(questionario).then( (id)=>{
-    /*
-      let vett=[...domande]
-      for(const v of vett){ 
-            if(v[tipo] === 1){
-              for(const j of v.opzioni){
-                const sdf = `opzione${j[indice]+1}`
-                vett[sdf] =j[opzione]
-              }
-              console.log("Passo da QUI")
-              delete v.opzioni
-              const versionedomanda = {...v, ...vett}
-             //await dao.inserisciDomande(versionedomanda)
-            }else{
-              console.log("Sono Qui")
-              //await  dao.inserisciDomande(v)
-            }
+}
+console.log(domanda)
 
-      }*/
-    res.status(201).json(id).end();
-    }).catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
+ dao.inserisciDomandeAperta(domanda).then((id)=>{
+   console.log("inserimento andato a buon fine "+ id)
+   res.status(201).json("ok").end();
+ }).catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
 
-});
+ })
+
+
+ app.post('/api/domandechiuse', async (req, res) => {
+ 
+  const domanda = {
+ 
+   did: req.body.did,
+   qid: req.body.qid,
+   quesito: req.body.quesito,
+   min: req.body.min,
+   max: req.body.max,
+   tipo: req.body.tipo,
+   numopzioni: req.body.numopzioni,
+   ...req.body
+   
+ }
+ console.log(domanda)
+ 
+  dao.inserisciDomandeChiusa(domanda).then((id)=>{
+    console.log("inserimento andato a buon fine "+ id)
+    res.status(201).json("ok").end();
+  }).catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
+ 
+  })
+ 
+
 
 app.delete("/api/questionari", async (req, res) => {
   

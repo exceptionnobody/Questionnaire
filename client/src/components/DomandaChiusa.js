@@ -11,9 +11,17 @@ const DomandaChiusa = (props)=>{
 
     const sottometti=(event)=>{
         event.preventDefault();
-         const domanda = {did: props.did, qid:idQuestionario, modificabile:true, quesito: quesito, min: min, max:max, numopzioni: numOpzioni, tipo:1, opzioni: opzioni}
-          setOpzioni([])
-          setNumOpzioni(0)
+        let opzionei
+        let domanda = {};
+        for(let i=0; i<numOpzioni; i++){
+          opzionei = `opzione${i+1}`
+          domanda[opzionei] = opzioni[i].opzione
+
+        }
+        
+         domanda = {did: props.did, qid:idQuestionario, modificabile:true, quesito: quesito, min: min, max:max, numopzioni: numOpzioni, tipo:1, opzioni: opzioni.map(t=>t), ...domanda}
+         setOpzioni([])
+         setNumOpzioni(0)
          props.aggiungiDomanda(domanda);
     }
 

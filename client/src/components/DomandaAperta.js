@@ -12,10 +12,12 @@ const DomandaAperta = (props)=>{
         let min, max;
         if(obbligatoria)
             min=max=1;
-        else
-            min=max=0;
+        else{
+            min=0;
+            max=1;
+        }
 
-        const domanda = {did: props.did, qid: idQuestionario, modificabile:true, quesito: quesito, min: min, max:max, numopzioni: 1, tipo:0, opzioneaperta: "OPTAPERTA" }
+        const domanda = {did: props.did, qid: idQuestionario, modificabile:true, quesito: quesito, min: min, max:max, numopzioni: 1, tipo:0 }
         props.aggiungiDomanda(domanda);
     }
 return <Accordion defaultActiveKey="0">

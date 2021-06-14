@@ -29,7 +29,7 @@ function App() {
   const [idQuestionari, setIdQuestionari] = useState(0)
   const [questionari, setQuestionari] =useState([])
   const [questionarioselezionato, setQuestionarioselezionato] = useState({});
-
+  const [contaDomande, setContaDomande] = useState(0)
 
   const aggiungiQuestionario = ()=>{
       setMode('create');
@@ -44,8 +44,8 @@ function App() {
 
       questionariovett[idQuestionari] = {qid: idQuestionari , titolo: nameq, admin:1}
       setQuestionari(questionariovett)
-      console.log(questionariovett)
       setMode('compila')
+      
   }
  
   const aggiungiDomandeQuestionario = (domandeQuestionarioProv)=>{
@@ -54,9 +54,18 @@ function App() {
     tempQuestionario[idQuestionari].domande = domandeQuestionarioProv
     tempQuestionario[idQuestionari].numdomande = domandeQuestionarioProv.length
     setQuestionari(tempQuestionario)
-    setMode('view')
+    console.log(tempQuestionario)
+    setContaDomande(s => s+domandeQuestionarioProv.length)
+    API.inserisciUnNuovoQuestionario(tempQuestionario[idQuestionari]).then(()=>{
 
-    API.inserisciUnNuovoQuestionario(tempQuestionario[idQuestionari])
+      for(const vv of domandeQuestionarioProv){
+        if(vv.tipo === 0)
+           API.inserisciUnNuovaDomandaAperta(vv)
+       else
+           API.inserisciUnNuovaDomandaChiusa(vv)
+      }
+    })
+    setMode('view')
   } 
 
   const filtraQuestionario = (id) => {
@@ -69,7 +78,8 @@ function App() {
     <Container fluid>
       <Navigation />
       <Row className="vh-100">
-      <QuestionarioManager questionari={questionari} setQuestionari={setQuestionari}  setMode={setMode} aggiungiDomandeQuestionario={aggiungiDomandeQuestionario}
+      <QuestionarioManager contaDomande={contaDomande} 
+      questionari={questionari} setQuestionari={setQuestionari}  setMode={setMode} aggiungiDomandeQuestionario={aggiungiDomandeQuestionario}
       questionList={questionList} questionarioselezionato={questionarioselezionato} filtraQuestionario={filtraQuestionario}
       mode={mode} idQuestionari={idQuestionari} chiudiQuestionario={chiudiQuestionario} compilaQuestionario={compilaQuestionario} >
 
@@ -86,38 +96,35 @@ function App() {
 
 const QuestionarioManager = (props) => {
 
-  const {mode, filtraQuestionario, idQuestionari, chiudiQuestionario, compilaQuestionario, questionari,  aggiungiDomandeQuestionario, questionarioselezionato } = props;
+  const {mode, contaDomande, filtraQuestionario, idQuestionari, chiudiQuestionario, compilaQuestionario, questionari,  aggiungiDomandeQuestionario, questionarioselezionato } = props;
 
   const [ domande, setDomande] = useState([])
   //const [ domande, setDomande] = useState([...questionList])
   const [ showDomanda, setShowDomanda] = useState()
   const [did, setDid] = useState(0);
   const [modo, setModo] = useState('')
-
+ 
   const pubblicaQuestionario= () =>{
-    console.log("test pubblica Questionario")
-    let newId
-    if(domande.length >1){
+    let newId;
+    if(domande.length >=1){
 
      const tempDomande = [...domande]
 
-     if(idQuestionari !== 0)
-        newId = questionari[idQuestionari-1].numdomande;
-
+     newId = contaDomande;
      for(const v of tempDomande){
        v.modificabile=false
        if(v.qid !== 0){
-            v.did = newId
+            v.did = newId;
             newId++;
        }
      }
 
-
-     setDomande([])
-     
      setDid(0)
      setModo('view')
      aggiungiDomandeQuestionario(tempDomande)
+
+    
+     setDomande([])
     }else{
 
     }
@@ -132,9 +139,7 @@ const QuestionarioManager = (props) => {
 
 
   const aggiungiDomanda = (domanda) =>{
-    console.log(domanda)
-    console.log(idQuestionari)
-        setDomande(s => [...s, domanda]);
+         setDomande(s => [...s, domanda]);
         setShowDomanda(false);
         setModo("temp")
         setDid(d => d+1)
