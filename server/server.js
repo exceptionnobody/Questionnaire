@@ -16,10 +16,6 @@ app.use(morgan('dev'));
 app.use(express.json());
 
 
-app.get("/api/info", async (req, res)=>{
-
-})
-
 // Parametrica /api/questionari?admin=?
 app.get('/api/questionari', async (req, res) => {
 
@@ -30,10 +26,10 @@ app.get('/api/questionari', async (req, res) => {
       admin: req.query.admin
     }
 
-    if(idAdmin.admin.toString()!== "null")
+    if(idAdmin.admin.toString() !== "null")
       result = await dao.getAllMyQuestionnaire(idAdmin.admin);
     else
-      result = await dao.getAllQuestionnaire();
+      result = await dao.getAllQuestionnaires();
 
     if (result.error)
         res.status(404).json(result);
@@ -45,7 +41,7 @@ app.get('/api/questionari', async (req, res) => {
 
 })
 
-// Query parametrica /api/domande?qid=valore
+// Query parametrica /api/domande?admin=valore
 app.get('/api/domande', async (req, res) => {
 
 
@@ -150,9 +146,56 @@ console.log(domanda)
 
 app.delete("/api/questionari", async (req, res) => {
   
-  await dao.cancellaQuestionari().then(() => {res.status(200).end()})
+  dao.cancellaQuestionari().then(() => {res.status(200).end()})
   .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
 })
+
+
+app.post("/api/utenti", async (req, res) => {
+
+const utente = {
+  nome: req.body.utente,
+  questionario: req.body.questionario
+}
+
+  dao.inserisciUser(utente).then((id)=>{res.status(200).json(id).end()})
+              .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
+})
+
+app.post("/api/risposte", async (req, res) => {
+
+  let risposta;
+  if ( req.body.numrisposte > 1){
+  
+  risposta = {
+    domanda: req.body.domanda,
+    user: req.body.user,
+    numrisposte: req.body.numrisposte, 
+    opzione1: req.body.opzione1, 
+    opzione2: req.body.opzione2, 
+    opzione3: req.body.opzione3, 
+    opzione4: req.body.opzione4,
+    opzione5: req.body.opzione5,
+    opzione6: req.body.opzione6,
+    opzione7: req.body.opzione7,
+    opzione8: req.body.opzione8, 
+    opzione9: req.body.opzione9, 
+    opzione10: req.body.opzione10
+  }
+}else{
+  risposta = {
+    domanda: req.body.domanda,
+    user: req.body.user,
+    numrisposte: req.body.numrisposte, 
+    opzioneaperta: req.body.opzioneaperta
+  }
+
+}
+console.log(risposta)
+    dao.inseriscRisposte(risposta).then((id)=>{res.status(200).json(id).end()})
+                .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
+  })
+
 
 // activate the server
 app.listen(port, () => {

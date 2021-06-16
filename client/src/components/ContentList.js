@@ -13,10 +13,10 @@ const OptionData = (props) => {
           <h4> {optionsList.quesito} </h4>
         </div>
         <div className="flex-fill m-auto">
-       {tipodomanda ?   <StampaOpzioni optionsList={optionsList}opzioni={optionsList.opzioni} numopzioni={optionsList.numopzioni}></StampaOpzioni> 
+       {tipodomanda ?   <StampaOpzioni optionsList={optionsList}opzioni={optionsList.opzioni} numopzioni={optionsList.numopzioni} ></StampaOpzioni> 
       : <Row>
         <Form className="m-0">
-         <Form.Control size="lg" type="text" placeholder="Large text" />                                                                                                                                              
+         <Form.Control size="lg" type="text" placeholder="Large text" disabled={true} />                                                                                                                                              
           </Form>
           </Row> }
           
@@ -60,13 +60,13 @@ const OptionData = (props) => {
     const { questionList, SpostaElementi, CancellaDomanda} = props;
     return (
       <>
-        <ListGroup as="div" variant="flush">
+        <ListGroup as="div" variant="flush" >
           {
             questionList.map(t => {
 
-            ;
+            
               return (
-                <ListGroup.Item as="li" key={t.did} className={`d-flex w-100  ${t.tipo? "bg-warning":"bg-info"}`}>
+                <ListGroup.Item as="li" key={t.did} className={`d-flex w-100  ${t.tipo? "bg-warning":"bg-info"}`} >
                     <OptionData optionsList={t} />
                     {t.modificabile && <AnswerControls domanda={t} lunghezzadomande={questionList.length}SpostaElementi={SpostaElementi} CancellaDomanda={CancellaDomanda}/>}
                 </ListGroup.Item>

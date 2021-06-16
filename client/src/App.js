@@ -11,8 +11,9 @@ import Filters from './components/Filter'
 import FormPersonale from './components/FormPersonale';
 import DomandeMenu from './components/DomandeMenu';
 import DomandaAperta from './components/DomandaAperta';
+import {LoginForm} from './components/LoginForm'
 import DomandaChiusa from './components/DomandaChiusa';
-//import { BrowserRouter as Router, Route, useParams, useHistory, Switch, Redirect } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 function App() {
 
@@ -24,10 +25,29 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [domande, setDomande] = useState([])
   const [visualizzaDomande, setVisualizzaDomande] = useState([])
-  const [adminId] = useState(2)
+  const [adminId] = useState(null)
+  const [message, setMessage] = useState('');
+  const [globalUser, setGlobalUser] = useState(false)
+  const [submitButton, setSubimitButton] = useState(false)
+
+  const [utilizzatori, setUtilizzatori] = useState([])
+
   const aggiungiQuestionario = ()=>{
       setMode('create');
   }
+
+
+const registraUser = (user) => {
+  const TempUser = {
+    utente: user,
+    questionario: questionarioselezionato.qid
+  }
+
+  console.log(TempUser)
+  API.inserisciUtente(TempUser).then(uid=> {TempUser.id=uid; setUtilizzatori(TempUser)})
+  
+  setSubimitButton(true)
+}
 
 
 
@@ -38,7 +58,7 @@ function App() {
   const compilaQuestionario = (nameq) => {
       const questionariovett = [...questionari]
 
-      questionariovett[idQuestionari] = {qid: idQuestionari , titolo: nameq, admin:adminId, numdomande:0}
+      questionariovett[idQuestionari] = {qid: idQuestionari , titolo: nameq, admin:adminId, numdomande:0, numutenti:0}
 
       API.inserisciUnNuovoQuestionario(questionariovett[idQuestionari]).then(result => {
         questionariovett[idQuestionari].qid = result;
@@ -103,7 +123,7 @@ function App() {
 
     }
 
-  }, [loading])
+  }, [loading, adminId])
 
   useEffect(() => {
 
@@ -135,7 +155,7 @@ function App() {
       })
     }
 
-  }, [questionari.length, contaDomande])
+  }, [questionari.length, contaDomande, adminId])
 
 /*
         for(const v of result.entries()){
@@ -146,19 +166,34 @@ function App() {
   return (
 
     <Container fluid>
-      <Navigation />
+      <Router>
+      <Navigation setGlobalUser={setGlobalUser} globalUser={globalUser} registraUser={registraUser}/>
+      <Switch>
+      <Route exact path="/">
       <Row className="vh-100">
-      <QuestionarioManager contaDomande={contaDomande} myDomande={visualizzaDomande}
+
+      <QuestionarioManager submitButton={submitButton}
+      contaDomande={contaDomande} myDomande={visualizzaDomande} setGlobalUser={setGlobalUser} 
       questionari={questionari} setQuestionari={setQuestionari}  setMode={setMode} aggiungiDomandeQuestionario={aggiungiDomandeQuestionario}
       questionarioselezionato={questionarioselezionato} filtraQuestionario={filtraQuestionario}
       mode={mode} idQuestionari={idQuestionari} chiudiQuestionario={chiudiQuestionario} compilaQuestionario={compilaQuestionario} >
 
 
       </QuestionarioManager>
+      </Row>
+      </Route>
+
+      <Route path="/login">
+      
+      <LoginForm message={message}>
       {mode === "view" && <Button variant="success" size="lg" className="fixed-right-bottom" onClick={aggiungiQuestionario}>+</Button>}
       {mode === "create" && <Button variant="success" size="lg" className="fixed-right-bottom btn btn-lg btn-danger" onClick={chiudiQuestionario}>X</Button>}
-      </Row>
-      
+      </LoginForm>
+
+      </Route>
+
+      </Switch>
+      </Router>
       </Container>
 
   );
@@ -167,12 +202,12 @@ function App() {
 const QuestionarioManager = (props) => {
 
   const {mode, contaDomande, filtraQuestionario, myDomande, idQuestionari, chiudiQuestionario, compilaQuestionario, questionari,  aggiungiDomandeQuestionario, questionarioselezionato } = props;
-
+  const {setGlobalUser, submitButton } = props
   const [ domande, setDomande] = useState([])
-  //const [ domande, setDomande] = useState([...questionList])
   const [ showDomanda, setShowDomanda] = useState()
   const [did, setDid] = useState(0);
   const [modo, setModo] = useState('')
+  const [showCompila, setShowCompila] = useState(false)
  
   const pubblicaQuestionario= () =>{
     let newId;
@@ -244,12 +279,20 @@ const QuestionarioManager = (props) => {
 
   return (<>
         <Col xs={3} bg="light" className="below-nav" id="left-sidebar">
-          {mode === 'view' && <Filters items={questionari} filtraQuestionario={filtraQuestionario}/>}
+          {mode === 'view' && <Filters items={questionari} filtraQuestionario={filtraQuestionario} setShowCompila={setShowCompila}/>}
           {mode === 'compila' && <DomandeMenu items={opzioneDomande} aggiungiDomanda={aggiungiDomanda} />}
         </Col>      
       <Col xs={9} className="below-nav">
-        {mode ==="view" && <><h2 className="pb-3">{questionarioselezionato.titolo} <small className="text-muted"></small></h2>
+        {mode ==="view" && <><h2 className="pb-3">{questionarioselezionato.titolo} <small className="text-muted"></small>
+                                </h2>
                               <ContentList  questionList={myDomande}  SpostaElementi={SpostaElementi}  />
+                              <Row className="justify-content-md-center pt-3">
+                              <Col md="auto">
+                              { showCompila &&  <Button variant="success" onClick={()=>{setGlobalUser(s=>!s); setShowCompila(false)}}>Compila</Button> }
+                              { submitButton && <Button variant="danger">Invia </Button>}
+                              </Col>
+                              </Row>
+                  
                               </>}
         {mode ==="create" && <FormPersonale chiudiQuestionario={chiudiQuestionario} compilaQuestionario={compilaQuestionario}/> }
         {mode === "compila" && <><h3 className="pb-3">Questionario: <span className="text-muted">{questionari[idQuestionari].titolo}</span>

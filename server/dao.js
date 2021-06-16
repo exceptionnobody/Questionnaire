@@ -84,11 +84,11 @@ exports.getAllMyQuestionnaire = (admin) => {
   })
 }
 
-exports.getAllQuestionnaire = () => {
+exports.getAllQuestionnaires = () => {
   return new Promise((resolve, reject) => {
 
     const sql = "SELECT * FROM questionari";
-    db.all(sql, [admin], (err, rows) => {
+    db.all(sql, [], (err, rows) => {
       if (err) {
         reject(err);
         return;
@@ -99,7 +99,8 @@ exports.getAllQuestionnaire = () => {
         const questionari = rows.map(t => ({
           qid: t.qid,
           titolo: t.titolo,
-          numdomande: t.numdomande
+          numdomande: t.numdomande,
+          numutenti: t.numutenti
         }))
         resolve(questionari);
       }
@@ -164,3 +165,29 @@ exports.cancellaQuestionari = function() {
       })
   });
 }
+
+exports.inserisciUser = (user) => {
+  return new Promise((resolve, reject) => {
+    const sql = `INSERT INTO utenti (nome, questionario) VALUES(?, ?)`;
+    db.run(sql, [user.nome, user.questionario], function (err) {
+      if (err) {
+        reject(err);
+      }
+      resolve(this.lastID);
+      console.log(`A row has been inserted with rowid ${this.lastID}`);
+    });
+  });
+};
+
+exports.inseriscRisposte = (risposta) => {
+  return new Promise((resolve, reject) => {
+    const sql = `INSERT INTO risposte (domanda, user, numrisposte, opzione1, opzione2, opzione3, opzione4, opzione5, opzione6, opzione7, opzione8, opzione9, opzione10, opzioneaperta) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+    db.run(sql, [risposta.domanda, risposta.user, risposta.numrisposte, risposta.opzione1, risposta.opzione2, risposta.opzione3, risposta.opzione4, risposta.opzione5, risposta.opzione6, risposta.opzione7, risposta.opzione8, risposta.opzione9, risposta.opzione10, risposta.opzioneaperta?risposta.opzioneaperta:null], function (err) {
+      if (err) {
+        reject(err);
+      }
+      resolve(this.lastID);
+      console.log(`A row has been inserted with rowid ${this.lastID}`);
+    });
+  });
+};
