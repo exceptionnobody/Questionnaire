@@ -13,6 +13,15 @@ const DomandaChiusa = (props)=>{
         event.preventDefault();
         let opzionei
         let domanda = {};
+        if(min > max || max > numOpzioni){
+            //setto un errore e dovrà essere corretto
+        }else{
+          if (min === max || min >= 1){
+            domanda.obbligatoria = 1
+          }else{
+            domanda.obbligatoria = 0
+          }
+
         for(let i=0; i<numOpzioni; i++){
           opzionei = `opzione${i+1}`
           domanda[opzionei] = opzioni[i].opzione
@@ -23,6 +32,7 @@ const DomandaChiusa = (props)=>{
          setOpzioni([])
          setNumOpzioni(0)
          props.aggiungiDomanda(domanda);
+      }
     }
 
     const registraOpzione = (value, ind) =>{
@@ -71,11 +81,15 @@ return <Accordion defaultActiveKey="0">
     } required>
         <option >{' '}</option>
         <option >1</option>
-        <option >2</option>
-        <option >3</option>
-        <option >4</option>
-        <option >5</option>
-        <option >10</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+        <option>6</option>
+        <option>7</option>
+        <option>8</option>
+        <option>9</option>
+        <option>10</option>
       </Form.Control>
     </Form.Group>
     <Form.Group as={Col} controlid="formGridState">
@@ -83,10 +97,16 @@ return <Accordion defaultActiveKey="0">
       <Form.Control as="select" onChange={(ev)=>setMin(+ev.target.value)} required>
         <option>{' '}</option>
         <option>0</option>
-        <option>1 </option>
+        <option >1</option>
         <option>2</option>
         <option>3</option>
         <option>4</option>
+        <option>5</option>
+        <option>6</option>
+        <option>7</option>
+        <option>8</option>
+        <option>9</option>
+        <option>10</option>
       </Form.Control>
     </Form.Group>
     <Form.Group as={Col} controlid="formGridState">
@@ -98,6 +118,10 @@ return <Accordion defaultActiveKey="0">
         <option>3</option>
         <option>4</option>
         <option>5</option>
+        <option>6</option>
+        <option>7</option>
+        <option>8</option>
+        <option>9</option>
         <option>10</option>
       </Form.Control>
     </Form.Group>

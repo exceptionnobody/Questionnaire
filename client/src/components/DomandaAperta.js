@@ -10,14 +10,17 @@ const DomandaAperta = (props)=>{
     const sottometti=(event)=>{
         event.preventDefault();
         let min, max;
-        if(obbligatoria)
+        let domanda = {}
+        if(obbligatoria){
             min=max=1;
-        else{
+            domanda.obbligatoria = 1;
+        }else{
             min=0;
             max=1;
+            domanda.obbligatoria = 0;
         }
 
-        const domanda = {did: props.did, qid: Qid, modificabile:true, quesito: quesito, min: min, max:max, numopzioni: 1, tipo:0 }
+        domanda = {did: props.did, qid: Qid, modificabile:true, quesito: quesito, min: min, max:max, numopzioni: 1, tipo:0, ...domanda }
         props.aggiungiDomanda(domanda);
     }
 return <Accordion defaultActiveKey="0">

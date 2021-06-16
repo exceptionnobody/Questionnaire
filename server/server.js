@@ -106,7 +106,8 @@ app.post('/api/questionari', async (req, res) => {
   min: req.body.min,
   max: req.body.max,
   tipo: req.body.tipo,
-  numopzioni: req.body.numopzioni
+  numopzioni: req.body.numopzioni,
+  obbligatoria: req.body.obbligatoria
   
 }
 console.log(domanda)

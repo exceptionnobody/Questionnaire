@@ -1,5 +1,5 @@
 import React from 'react'
-import { Form, ListGroup, Button, Row } from 'react-bootstrap/';
+import { Form, ListGroup, Button, Row, Badge } from 'react-bootstrap/';
 import { PencilSquare, Trash, ArrowDown, ArrowUp } from 'react-bootstrap-icons';
 
 const OptionData = (props) => {
@@ -9,14 +9,15 @@ const OptionData = (props) => {
     return (
       <>
         <div className="flex-fill m-auto">
-        <span><small>{optionsList.tipo?"Domanda Chiusa": "Domanda Aperta"}</small></span>
+        <span><small>{optionsList.tipo?"Domanda Chiusa": "Domanda Aperta"} {optionsList.obbligatoria && <Badge variant="danger">Obbligatoria</Badge>}</small></span>
           <h4> {optionsList.quesito} </h4>
+          
         </div>
         <div className="flex-fill m-auto">
        {tipodomanda ?   <StampaOpzioni optionsList={optionsList}opzioni={optionsList.opzioni} numopzioni={optionsList.numopzioni} ></StampaOpzioni> 
       : <Row>
         <Form className="m-0">
-         <Form.Control size="lg" type="text" placeholder="Large text" disabled={true} />                                                                                                                                              
+         <Form.Control size="lg" type="text" placeholder="Large text" disabled={false} />                                                                                                                                              
           </Form>
           </Row> }
           
