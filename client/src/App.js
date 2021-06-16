@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import './App.css';
 import API from './API/API'
-import { Container, Row, Col, Button } from 'react-bootstrap/';
+import { Container, Row, Col, Button, Form } from 'react-bootstrap/';
 import ContentList from './components/ContentList'
 import Navigation from './components/Navigation';
 import Filters from './components/Filter'
@@ -157,12 +157,6 @@ const registraUser = (user) => {
 
   }, [questionari.length, contaDomande, adminId])
 
-/*
-        for(const v of result.entries()){
-          console.log(v)
-         v.domande = await API.ottieniDomande(v.qid) 
-        }
-*/
   return (
 
     <Container fluid>
@@ -282,7 +276,7 @@ const QuestionarioManager = (props) => {
           {mode === 'view' && <Filters items={questionari} filtraQuestionario={filtraQuestionario} setShowCompila={setShowCompila}/>}
           {mode === 'compila' && <DomandeMenu items={opzioneDomande} aggiungiDomanda={aggiungiDomanda} />}
         </Col>      
-      <Col xs={9} className="below-nav">
+      <Col xs={9} className="below-nav" id="main">
         {mode ==="view" && <><h2 className="pb-3">{questionarioselezionato.titolo} <small className="text-muted"></small>
                                 </h2>
                               <ContentList  questionList={myDomande}  SpostaElementi={SpostaElementi}  />
@@ -292,7 +286,7 @@ const QuestionarioManager = (props) => {
                               { submitButton && <Button variant="danger">Invia </Button>}
                               </Col>
                               </Row>
-                  
+                              
                               </>}
         {mode ==="create" && <FormPersonale chiudiQuestionario={chiudiQuestionario} compilaQuestionario={compilaQuestionario}/> }
         {mode === "compila" && <><h3 className="pb-3">Questionario: <span className="text-muted">{questionari[idQuestionari].titolo}</span>

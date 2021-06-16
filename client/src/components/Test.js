@@ -1,19 +1,29 @@
 import React from 'react'
-import { Form, ListGroup, Button, Row, Badge, Col } from 'react-bootstrap/';
+import { Form, ListGroup, Button, Row, Badge } from 'react-bootstrap/';
 import { PencilSquare, Trash, ArrowDown, ArrowUp } from 'react-bootstrap-icons';
 
 const OptionData = (props) => {
     const { optionsList } = props;
-    const tipodomanda = (optionsList.tipo ===1 && optionsList.numopzioni >= 1) ? true: false;
+    const tipodomanda = (optionsList.tipo === 1 && optionsList.numopzioni >= 1) ? true: false;
   
     return (
       <>
         <div className="flex-fill m-auto">
-        <span><small>{optionsList.tipo?"Domanda Chiusa": "Domanda Aperta"} {optionsList.obbligatoria===1 && <Badge variant="danger">Obbligatoria</Badge>}</small></span>
+        <span><small>{optionsList.tipo?"Domanda Chiusa": "Domanda Aperta"} {optionsList.obbligatoria && <Badge variant="danger">Obbligatoria</Badge>}</small></span>
           <h4> {optionsList.quesito} </h4>
           
         </div>
-      </>
+        <div className="flex-fill m-auto">
+       {tipodomanda ?   <StampaOpzioni optionsList={optionsList}opzioni={optionsList.opzioni} numopzioni={optionsList.numopzioni} ></StampaOpzioni> 
+      : <Row>
+        <Form className="m-0">
+         <Form.Control size="lg" type="text" placeholder="Large text" disabled={false} />                                                                                                                                              
+          </Form>
+          </Row> }
+          
+          </div>
+          
+         </>
     )
   }
   
@@ -22,7 +32,7 @@ const OptionData = (props) => {
     return <Form>
       <div className="mb-3">
     { opzioni.map((t,i) =>{
-      return  <Form.Check key={i} type="checkbox" label={t.opzione} className={optionsList.important ? 'important' : ''} />
+      return  <Form.Check inline key={i} type="checkbox" label={t.opzione} className={optionsList.important ? 'important' : ''} />
      } )
      }
     </div>
@@ -54,20 +64,14 @@ const OptionData = (props) => {
         <ListGroup as="div" variant="flush" >
           {
             questionList.map(t => {
-              const tipodomanda = (t.tipo ===1 && t.numopzioni >= 1) ? true: false;
+
             
-              return (<>
+              return (
                 <ListGroup.Item as="li" key={t.did} className={`d-flex w-100  ${t.tipo? "bg-warning":"bg-info"}`} >
                     <OptionData optionsList={t} />
                     {t.modificabile && <AnswerControls domanda={t} lunghezzadomande={questionList.length}SpostaElementi={SpostaElementi} CancellaDomanda={CancellaDomanda}/>}
                 </ListGroup.Item>
-                {tipodomanda ? <StampaOpzioni optionsList={t}opzioni={t.opzioni} numopzioni={t.numopzioni} ></StampaOpzioni> :<>
-                                      <Form className="flex-fill d-flex w-100">
-                                       <Form.Control size="lg"  as="textarea" rows={2} placeholder="Large text" disabled={false} />                                                                                                                                              
-                                        </Form>
-                                        </>}
-                                       
-              </>);
+              );
             })
           }
         </ListGroup>
@@ -76,3 +80,13 @@ const OptionData = (props) => {
   }
   
   export default ContentList;
+
+  {/*<div className="flex-fill m-auto">
+  {tipodomanda ?   <StampaOpzioni optionsList={optionsList}opzioni={optionsList.opzioni} numopzioni={optionsList.numopzioni} ></StampaOpzioni> 
+: <Row>
+  <Form className="m-0">
+   <Form.Control size="lg" type="text" placeholder="Large text" disabled={false} />                                                                                                                                              
+    </Form>
+    </Row> } 
+    
+</div>*/}
