@@ -6,6 +6,8 @@ const morgan = require('morgan');
 const passport = require('passport'); // auth middleware
 const LocalStrategy = require('passport-local').Strategy; // username and password for login
 const session = require('express-session'); // enable sessions
+const userDao = require('./user-dao');
+
 // init express
 const app = new express();
 const port = 3001;
@@ -15,6 +17,76 @@ const port = 3001;
 app.use(morgan('dev'));
 app.use(express.json());
 
+/*** Set up Passport ***/
+// set up the "username and password" login strategy
+// by setting a function to verify username and password
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+      userDao.getUser(username, password).then((user) => {
+      if (!user)
+        return done(null, false, { message: 'Incorrect username and/or password.' });
+        
+      return done(null, user);
+    })
+  }
+));
+
+// serialize and de-serialize the user (user object <-> session)
+  // we serialize the user id and we store it in the session: the session is very small in this way
+  passport.serializeUser((user, done) => {
+    //console.log("serializeUser: user:" + JSON.stringify(user));
+    done(null, user.id);
+  });
+  
+  // starting from the data in the session, we extract the current (logged-in) user
+  passport.deserializeUser((id, done) => {
+    //console.log("deserializeUser: id:" + id);
+    userDao.getUserById(id)
+      .then(user => {
+        //console.log("deserializeUser: user da db:" + JSON.stringify(user));
+        done(null, user); // this will be available in req.user
+      }).catch(err => {
+        done(err, null);
+      });
+  });
+
+  // set up the session
+app.use(session({
+  // by default, Passport uses a MemoryStore to keep track of the sessions
+  secret: 'a secret sentence not to share with anybody and anywhere, used to sign the session ID cookie',
+  resave: false,
+  saveUninitialized: false,
+}));
+
+const isLoggedIn = (req, res, next) => {
+  if(req.isAuthenticated())
+    return next();
+  
+  return res.status(401).json({ error: 'not authenticated'});
+}
+// then, init passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.post('/api/sessions', function(req, res, next) {
+  passport.authenticate('local', (err, user, info) => {
+    if (err)
+      return next(err);
+      if (!user) {
+        // display wrong login messages
+        return res.status(401).json(info);
+      }
+      // success, perform the login
+      req.login(user, (err) => {
+        if (err)
+          return next(err);
+        
+        // req.user contains the authenticated user, we send all the user info back
+        // this is coming from userDao.getUser()
+        return res.json(req.user);
+      });
+  })(req, res, next);
+});
 
 // Parametrica /api/questionari?admin=?
 app.get('/api/questionari', async (req, res) => {
@@ -96,6 +168,23 @@ app.post('/api/questionari', async (req, res) => {
 
  })
 
+
+ app.put('/api/questionari', async (req, res) => {
+ 
+  const questionario = {
+    qid: req.body.qid
+  };
+
+ console.log(questionario)
+ dao.aggiornaNumUtenti(questionario).then((result)=>{
+   console.log("Aggiornamento andato a buon fine "+ result)
+   res.status(201).json(result).end()
+ }).catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
+
+ })
+
+
+
  app.post('/api/domandeaperte', async (req, res) => {
  
  const domanda = {
@@ -155,10 +244,10 @@ app.delete("/api/questionari", async (req, res) => {
 app.post("/api/utenti", async (req, res) => {
 
 const utente = {
-  nome: req.body.utente,
+  nome: req.body.nome,
   questionario: req.body.questionario
 }
-
+console.log(utente)
   dao.inserisciUser(utente).then((id)=>{res.status(200).json(id).end()})
               .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
 })
@@ -166,7 +255,7 @@ const utente = {
 app.post("/api/risposte", async (req, res) => {
 
   let risposta;
-  if ( req.body.tipo===1 && req.body.numrisposte >= 1){
+ 
   
   risposta = {
     domanda: req.body.domanda,
@@ -181,15 +270,9 @@ app.post("/api/risposte", async (req, res) => {
     opzione7: req.body.opzione7,
     opzione8: req.body.opzione8, 
     opzione9: req.body.opzione9, 
-    opzione10: req.body.opzione10
-  }
-}else{
-  risposta = {
-    domanda: req.body.domanda,
-    user: req.body.user,
-    numrisposte: req.body.numrisposte, 
+    opzione10: req.body.opzione10,
     opzioneaperta: req.body.opzioneaperta
-  }
+ 
 
 }
 console.log(risposta)

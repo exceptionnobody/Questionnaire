@@ -168,7 +168,7 @@ exports.cancellaQuestionari = function() {
 
 exports.inserisciUser = (user) => {
   return new Promise((resolve, reject) => {
-    const sql = `INSERT INTO utenti (nome, questionario) VALUES(?, ?)`;
+    const sql = `INSERT INTO utenti (nome, questionario) VALUES(?,?)`;
     db.run(sql, [user.nome, user.questionario], function (err) {
       if (err) {
         reject(err);
@@ -191,3 +191,22 @@ exports.inseriscRisposte = (risposta) => {
     });
   });
 };
+
+exports.aggiornaNumUtenti = (qid) => {
+  return new Promise((resolve, reject) => {
+    const sql = `UPDATE questionari SET numutenti=numutenti+1 WHERE qid=?`;
+    db.run(sql, [qid.qid], function (err) {
+      if (err) {
+        reject(err);
+      }
+      resolve(this.changes);
+      console.log(`Row(s) updated: ${this.changes}`);
+    });
+  });
+
+}
+/*
+UPDATE questionari
+SET numutenti = numutenti+1
+WHERE qid=1
+*/

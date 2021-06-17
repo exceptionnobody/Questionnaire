@@ -16,11 +16,11 @@ const OptionData = (props) => {
   }
   
   const StampaOpzioni = (props) => {
-    const {opzioni, optionsList, gestisciRisposte} = props;
-    return <Form key={`${optionsList.did}`}>
+    const {opzioni, optionsList, gestisciRisposte, bloccaRisposte} = props;
+    return <Form key={`${optionsList.did}`} >
       <div className="mb-3">
     { opzioni.map((t,i) =>{
-      return  <Form.Check key={i} type="checkbox" onClick={(event)=> gestisciRisposte(event.target.checked, i, optionsList)} label={t.opzione} className={optionsList.important ? 'important' : ''} />
+      return  <Form.Check key={i} type="checkbox" disabled={!!bloccaRisposte}onClick={(event)=> gestisciRisposte(event.target.checked, i, optionsList)} label={t.opzione}  className={optionsList.important ? 'important' : ''} />
      } )
      }
     </div>
@@ -46,34 +46,35 @@ const OptionData = (props) => {
   
   
   const ContentList = (props) => {
-    const { questionList, SpostaElementi, CancellaDomanda, setRisposteGlobali} = props;
+    const { questionList, SpostaElementi, CancellaDomanda, setRisposteGlobali } = props;
+    
     //const [numeroRisposteAttese, setNumeroRisposteAttese] = useState(questionList.filter(q => q.obbligatoria===1).map(t=> t.min).reduce((sum, value) => sum+value,0))
-    const [risposte, setRisposte] =useState(questionList.map(d => {
+    const [risposte, setRisposte] =useState( questionList.lenght!==0? questionList.map(d => {
       return {
         domanda: d.did,
         numrisposte: 0,
         tipo: d.tipo,
         obbligatoria: d.obbligatoria,
       }
-    }))
+    }):null)
     
     const gestisciRisposte= (value, id, domanda)=>{
       const temp = [...risposte];
-      console.log(value)
-
-      if(domanda.tipo === 0 ){
+      if(value.length <= 20){
+        console.log("VERO")
+      }else{
+        console.log("FALSO")
+        console.log(value.length)
+      }
+      if(domanda.tipo === 0 && value.length <=20){
         console.log("ID domanda aperta: "+ id)
-        //console.log(domanda)
         for(const z of temp){
           if(z.domanda === id){
             z.numrisposte = 1
             z.opzioneaperta = value
-
-
             }
           }
-      }
-      else{
+      }  else{
         console.log("ID domanda chiusa: "+domanda.did)
         console.log(`Opzione domanda chiusa: ${id+1}`)
         let rispostaData;
@@ -81,9 +82,7 @@ const OptionData = (props) => {
           if(v.domanda === domanda.did && value){
             rispostaData = `opzione${id+1}`
             v[rispostaData] = 1;
-            v.numrisposte++;
-            
-           
+            v.numrisposte++;                      
           }
           if(v.domanda === domanda.did && !value){
             rispostaData = `opzione${id+1}`
@@ -91,10 +90,9 @@ const OptionData = (props) => {
             v.numrisposte--;
            }
         }
-          }
+      }
       setRisposte([...temp])
       setRisposteGlobali([...temp])
-      console.log(temp)
     }
 
     return (
@@ -105,14 +103,14 @@ const OptionData = (props) => {
               const tipodomanda = (t.tipo ===1 && t.numopzioni >= 1) ? true: false;
             
               return (<div key={t.did}>
-                <ListGroup.Item as="li" key={t.quesito} className={`d-flex w-100  ${t.tipo? "bg-warning":"bg-info"}`} >
+                <ListGroup.Item as="li" key={t.quesito} className={`d-flex w-100  ${t.tipo? "bg-warning":"bg-info"}`}  >
                     <OptionData optionsList={t} />
-                    {t.modificabile && <AnswerControls domanda={t} lunghezzadomande={questionList.length}SpostaElementi={SpostaElementi} CancellaDomanda={CancellaDomanda}/>}
+                    {t.modificabile && <AnswerControls domanda={t} lunghezzadomande={questionList.length}SpostaElementi={SpostaElementi} CancellaDomanda={CancellaDomanda} />}
                 </ListGroup.Item>
-                {tipodomanda ? <StampaOpzioni optionsList={t} opzioni={t.opzioni} numopzioni={t.numopzioni} gestisciRisposte={gestisciRisposte}></StampaOpzioni> :
+                {tipodomanda ? <StampaOpzioni optionsList={t} opzioni={t.opzioni} numopzioni={t.numopzioni} gestisciRisposte={gestisciRisposte} bloccaRisposte={props.bloccaRisposte}></StampaOpzioni> :
                 <>
-                                      <Form className="flex-fill d-flex w-100" key={t.did}>
-                                       <Form.Control size="lg" as="textarea" rows={2} placeholder="Large text" disabled={false} onChange={(event)=> gestisciRisposte(event.target.value, t.did, t)}/>                                                                                                                                              
+                                      <Form className="flex-fill d-flex w-100" key={t.did} >
+                                       <Form.Control size="lg" as="textarea" rows={2} placeholder="Large text"  readOnly={!!props.bloccaRisposte} onChange={(event)=> gestisciRisposte(event.target.value, t.did, t)}/>                                                                                                                                              
                                         </Form>
                                         </>}
                                        

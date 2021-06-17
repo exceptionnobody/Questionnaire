@@ -144,7 +144,67 @@ async function inserisciRisposta(risposta){
 }
 
 
-const API = {ottieniDomande, inserisciUtente, inserisciRisposta,
+async function aggiornaNumUtentiQuestionario(questionario){
+  let url = "/questionari";
+  return new Promise((resolve, reject) => {
+  fetch(baseURL+url, {
+      method: 'PUT',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(questionario)
+  }).then((response) => {
+      if (response.ok) {
+        resolve(null);
+      } else {
+        // analyze the cause of error
+        response.json()
+          .then((obj) => { reject(obj); }) // error msg in the response body
+          .catch((err) => { reject({ errors: [{ param: "Application", msg: "Cannot parse server response" }] }) }); // something else
+      }
+    }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) }); // connection errors
+});
+}
+
+async function logIn(credentials) {
+  let response = await fetch(baseURL +'/sessions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(credentials),
+  });
+  if(response.ok) {
+    const user = await response.json();
+    return user;
+  }
+  else {
+    try {
+      const errDetail = await response.json();
+      throw errDetail.message;
+    }
+    catch(err) {
+      throw err;
+    }
+  }
+}
+
+async function logOut() {
+  await fetch('/api/sessions/current', { method: 'DELETE' });
+}
+
+async function getUserInfo() {
+  const response = await fetch(baseURL + '/sessions/current');
+  const userInfo = await response.json();
+  if (response.ok) {
+    return userInfo;
+  } else {
+    throw userInfo;  // an object with the error coming from the server
+  }
+}
+
+
+const API = {ottieniDomande, inserisciUtente, inserisciRisposta, aggiornaNumUtentiQuestionario, logIn, logOut, getUserInfo,
   inserisciUnNuovoQuestionario, inserisciUnNuovaDomandaAperta, inserisciUnNuovaDomandaChiusa, ottieniMieiQuestionari};
 
 export default API;

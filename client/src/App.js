@@ -13,7 +13,7 @@ import DomandeMenu from './components/DomandeMenu';
 import DomandaAperta from './components/DomandaAperta';
 import {LoginForm} from './components/LoginForm'
 import DomandaChiusa from './components/DomandaChiusa';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 
 function App() {
 
@@ -31,6 +31,10 @@ function App() {
   const [submitButton, setSubimitButton] = useState(false)
   const [risposteGlobali, setRisposteGlobali] = useState([])
   const [utilizzatore, setUtilizzatore] = useState(null)
+  const [idTemporaneoDopoCompilazione, setIdTemporaneo] = useState(0)
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [bloccaRisposte, setBloccaRisposte] = useState(true)
+  const [admin, setAdmin] = useState({})
 
   const aggiungiQuestionario = ()=>{
       setMode('create');
@@ -52,15 +56,22 @@ const verificaRisposte = async (funzione)=>{
     }
   }
   if(numeroRisposteTotali >= risposteattese){
-    console.log("posso inviare il questionari")
+    console.log("posso inviare il questionario")
     for(const v of risposteGlobali){
-      const temp = {...v}
+      const temp = Object.assign({},v)
       temp.user = utilizzatore.id
+      console.log(temp)
       await  API.inserisciRisposta(temp)
     }
-     setSubimitButton(false)
+    await API.aggiornaNumUtentiQuestionario({qid:questionarioselezionato.qid})
+    setSubimitButton(false)
     setMessage({msg: null})
     funzione(true)
+    setMode('view')
+    setUtilizzatore({})
+    setRisposteGlobali([]);
+    setVisualizzaDomande([])
+    filtraQuestionario(idTemporaneoDopoCompilazione)
   }else{
     console.log("Questionario non valido")
     let errore = []
@@ -76,13 +87,12 @@ const verificaRisposte = async (funzione)=>{
 
 const registraUser = (user) => {
   const TempUser = {
-    utente: user,
+    nome: user,
     questionario: questionarioselezionato.qid
   }
 
  
-  API.inserisciUtente(TempUser).then(uid=> {TempUser.id=uid; setUtilizzatore({...TempUser}); setSubimitButton(true)})
-  console.log(utilizzatore) 
+  API.inserisciUtente(TempUser).then(uid=> {TempUser.id=uid; setUtilizzatore({...TempUser}); setSubimitButton(true); setMode("compilaUtente")})
   
 }
 
@@ -109,6 +119,36 @@ const registraUser = (user) => {
       
   }
  
+  const doLogin = async (credentials) => {
+   
+
+    try {
+
+      const adminServer = await API.logIn(credentials);
+
+      console.log("Login effettuato corretamente");
+
+      setAdmin(adminServer)
+
+      setLoggedIn(true);
+
+      setLoading(true);
+      <Redirect to="/"/>
+
+      // il valore di loggedIn non cambia
+
+     // setMessage({msg: `Welcome, ${userFromServer.name}!`, color: `${userFromServer.color}`});
+
+    } catch (err) {
+
+      setMessage({msg: "Unauthorized. Insert correct credentials.", color: 'danger'});
+
+    }
+
+
+
+  }
+
   const aggiungiDomandeQuestionario = (domandeQuestionarioProv)=>{
     setIdQuestionari(s => s+1)
     const tempQuestionario = [...questionari]
@@ -134,7 +174,9 @@ const registraUser = (user) => {
 
     setQuestionarioselezionato(questionari[id])
     console.log("QID Questionario selezionato "+questionari[id].qid)
+    console.log("ID QUESTIONARIO NELL'ARRAY: "+id)
     setVisualizzaDomande(domande.filter(d => d.questionario === questionari[id].qid))
+    setIdTemporaneo(id)
   }
 
   useEffect(() => {
@@ -203,7 +245,7 @@ const registraUser = (user) => {
       <Route exact path="/">
       <Row className="vh-100">
 
-      <QuestionarioManager 
+      <QuestionarioManager  bloccaRisposte={bloccaRisposte}
       submitButton={submitButton} setRisposteGlobali={setRisposteGlobali} verificaRisposte={verificaRisposte}
       contaDomande={contaDomande} myDomande={visualizzaDomande} setGlobalUser={setGlobalUser} message={message}
       questionari={questionari} setQuestionari={setQuestionari}  setMode={setMode} aggiungiDomandeQuestionario={aggiungiDomandeQuestionario}
@@ -212,15 +254,16 @@ const registraUser = (user) => {
 
 
       </QuestionarioManager>
+
       </Row>
+      {loggedIn && mode === "view" && <Button variant="success" size="lg" className="fixed-right-bottom" onClick={aggiungiQuestionario}>+</Button>}
+      {loggedIn && mode === "create" && <Button variant="success" size="lg" className="fixed-right-bottom btn btn-lg btn-danger" onClick={chiudiQuestionario}>X</Button>}
       </Route>
 
       <Route path="/login">
       
-      <LoginForm message={message}>
-      {mode === "view" && <Button variant="success" size="lg" className="fixed-right-bottom" onClick={aggiungiQuestionario}>+</Button>}
-      {mode === "create" && <Button variant="success" size="lg" className="fixed-right-bottom btn btn-lg btn-danger" onClick={chiudiQuestionario}>X</Button>}
-      </LoginForm>
+      {loggedIn ? <Redirect to="/"/> : <LoginForm message={message} login={doLogin}/>}
+     
 
       </Route>
 
@@ -240,7 +283,7 @@ const QuestionarioManager = (props) => {
   const [did, setDid] = useState(0);
   const [modo, setModo] = useState('')
   const [showCompila, setShowCompila] = useState(false)
- 
+  const [flagBlocca, setFlagblocca] =useState(submitButton?true:false)
   const pubblicaQuestionario= () =>{
     let newId;
     if(domande.length >=1){
@@ -311,16 +354,16 @@ const QuestionarioManager = (props) => {
 
   return (<>
         <Col xs={3} bg="light" className="below-nav" id="left-sidebar" key={"filtri"}>
-          {mode === 'view' && <Filters items={questionari} filtraQuestionario={filtraQuestionario} setShowCompila={setShowCompila}/>}
+          {(mode === 'view' || mode==="compilaUtente") && <Filters items={questionari} filtraQuestionario={filtraQuestionario} setShowCompila={setShowCompila}/>}
           {mode === 'compila' && <DomandeMenu items={opzioneDomande} aggiungiDomanda={aggiungiDomanda} />}
         </Col>      
       <Col xs={9} className="below-nav" id="main" key={"main"} >
-        {mode ==="view" && <><h2 className="pb-3">{questionarioselezionato.titolo} <small className="text-muted"></small>
+        {mode ==="compilaUtente" ? <><h2 className="pb-3">{questionarioselezionato.titolo} <small className="text-muted"></small>
                                 </h2>
                                 {message.msg!==null && message.map((t,i) =>  <Alert key={i} variant={"danger"}>
-    {t.msg} {t.domanda}
-  </Alert>)}
-                              <ContentList key={myDomande.length} questionList={myDomande}  SpostaElementi={SpostaElementi} setRisposteGlobali={setRisposteGlobali} />
+                                {t.msg} {t.domanda}
+                                </Alert>)}
+                              <ContentList key={myDomande.length} questionList={myDomande}  SpostaElementi={SpostaElementi} setRisposteGlobali={setRisposteGlobali} bloccaRisposte={!submitButton} />
                               <Row className="justify-content-md-center pt-3"  id="tasti">
                               <Col md="auto">
                               { showCompila &&  <Button key={"compila"}variant="success" onClick={()=>{setGlobalUser(s=>!s); setShowCompila(false)}}>Compila</Button> }
@@ -328,6 +371,17 @@ const QuestionarioManager = (props) => {
                               </Col>
                               </Row>
   
+                              </>: <>
+                              <h2 className="pb-3">{questionarioselezionato.titolo} <small className="text-muted"></small>
+                                </h2>
+
+                              <ContentList key={myDomande.length} questionList={myDomande}  SpostaElementi={SpostaElementi} setRisposteGlobali={setRisposteGlobali} bloccaRisposte={!submitButton}/>
+                              <Row className="justify-content-md-center pt-3"  id="tasti">
+                              <Col md="auto">
+                              { showCompila &&  <Button key={"compila"}variant="success" onClick={()=>{setGlobalUser(s=>!s); setShowCompila(false)}}>Compila</Button> }
+                              { submitButton && <Button key={"invia"}variant="danger"onClick={()=>verificaRisposte(setShowCompila)}>Invia </Button>}
+                              </Col>
+                              </Row>  
                               </>}
         {mode ==="create" && <FormPersonale chiudiQuestionario={chiudiQuestionario} compilaQuestionario={compilaQuestionario}/> }
         {mode === "compila" && <><h3 className="pb-3">Questionario: <span className="text-muted">{questionari[idQuestionari].titolo}</span>
