@@ -182,7 +182,7 @@ exports.inserisciUser = (user) => {
 exports.inseriscRisposte = (risposta) => {
   return new Promise((resolve, reject) => {
     const sql = `INSERT INTO risposte (domanda, user, numrisposte, opzione1, opzione2, opzione3, opzione4, opzione5, opzione6, opzione7, opzione8, opzione9, opzione10, opzioneaperta) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-    db.run(sql, [risposta.domanda, risposta.user, risposta.numrisposte, risposta.opzione1, risposta.opzione2, risposta.opzione3, risposta.opzione4, risposta.opzione5, risposta.opzione6, risposta.opzione7, risposta.opzione8, risposta.opzione9, risposta.opzione10, risposta.opzioneaperta?risposta.opzioneaperta:null], function (err) {
+    db.run(sql, [risposta.domanda, risposta.user, risposta.numrisposte, risposta.opzione1?risposta.opzione1:null, risposta.opzione2?risposta.opzione2:null, risposta.opzione3?risposta.opzione3:null, risposta.opzione4?risposta.opzione4:null, risposta.opzione5?risposta.opzione5:null, risposta.opzione6?risposta.opzione6:null, risposta.opzione7?risposta.opzione7:null, risposta.opzione8?risposta.opzione8:null, risposta.opzione9?risposta.opzione9:null, risposta.opzione10?risposta.opzione10:null, risposta.opzioneaperta?risposta.opzioneaperta:null], function (err) {
       if (err) {
         reject(err);
       }

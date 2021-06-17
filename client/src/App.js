@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import './App.css';
 import API from './API/API'
-import { Container, Row, Col, Button, Form } from 'react-bootstrap/';
+import { Container, Row, Col, Button, Alert } from 'react-bootstrap/';
 import ContentList from './components/ContentList'
 import Navigation from './components/Navigation';
 import Filters from './components/Filter'
@@ -26,15 +26,52 @@ function App() {
   const [domande, setDomande] = useState([])
   const [visualizzaDomande, setVisualizzaDomande] = useState([])
   const [adminId] = useState(null)
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState({msg:null});
   const [globalUser, setGlobalUser] = useState(false)
   const [submitButton, setSubimitButton] = useState(false)
-
-  const [utilizzatori, setUtilizzatori] = useState([])
+  const [risposteGlobali, setRisposteGlobali] = useState([])
+  const [utilizzatore, setUtilizzatore] = useState(null)
 
   const aggiungiQuestionario = ()=>{
       setMode('create');
   }
+
+const verificaRisposte = async (funzione)=>{
+  const contaObbligatorie = visualizzaDomande.filter(t => t.obbligatoria===1)
+  const numobbligatorie = contaObbligatorie.length
+  const risposteattese = visualizzaDomande.filter(q => q.obbligatoria===1).map(t=> t.min).reduce((sum, value) => sum+value,0)
+  let numeroRisposteTotali=0;
+  const array = new Array(numobbligatorie).fill(0);
+  console.log(contaObbligatorie)
+  for(let i=0; i<numobbligatorie; i++){
+  for(const k of risposteGlobali){
+    if(k.domanda === contaObbligatorie[i].did && k.numrisposte >= contaObbligatorie[i].min && k.numrisposte <= contaObbligatorie[i].max){
+      numeroRisposteTotali += k.numrisposte;
+      array[i]=1;
+    }
+    }
+  }
+  if(numeroRisposteTotali >= risposteattese){
+    console.log("posso inviare il questionari")
+    for(const v of risposteGlobali){
+      const temp = {...v}
+      temp.user = utilizzatore.id
+      await  API.inserisciRisposta(temp)
+    }
+     setSubimitButton(false)
+    setMessage({msg: null})
+    funzione(true)
+  }else{
+    console.log("Questionario non valido")
+    let errore = []
+    for(let i =0; i< numobbligatorie; i++){
+      if(array[i]===0){
+        errore.push({msg: "Rispetta i vincoli della domanda: ", domanda: visualizzaDomande[i].quesito})
+      }
+    }
+    setMessage(errore)
+  }
+}
 
 
 const registraUser = (user) => {
@@ -43,10 +80,10 @@ const registraUser = (user) => {
     questionario: questionarioselezionato.qid
   }
 
-  console.log(TempUser)
-  API.inserisciUtente(TempUser).then(uid=> {TempUser.id=uid; setUtilizzatori(TempUser)})
+ 
+  API.inserisciUtente(TempUser).then(uid=> {TempUser.id=uid; setUtilizzatore({...TempUser}); setSubimitButton(true)})
+  console.log(utilizzatore) 
   
-  setSubimitButton(true)
 }
 
 
@@ -166,8 +203,9 @@ const registraUser = (user) => {
       <Route exact path="/">
       <Row className="vh-100">
 
-      <QuestionarioManager submitButton={submitButton}
-      contaDomande={contaDomande} myDomande={visualizzaDomande} setGlobalUser={setGlobalUser} 
+      <QuestionarioManager 
+      submitButton={submitButton} setRisposteGlobali={setRisposteGlobali} verificaRisposte={verificaRisposte}
+      contaDomande={contaDomande} myDomande={visualizzaDomande} setGlobalUser={setGlobalUser} message={message}
       questionari={questionari} setQuestionari={setQuestionari}  setMode={setMode} aggiungiDomandeQuestionario={aggiungiDomandeQuestionario}
       questionarioselezionato={questionarioselezionato} filtraQuestionario={filtraQuestionario}
       mode={mode} idQuestionari={idQuestionari} chiudiQuestionario={chiudiQuestionario} compilaQuestionario={compilaQuestionario} >
@@ -196,7 +234,7 @@ const registraUser = (user) => {
 const QuestionarioManager = (props) => {
 
   const {mode, contaDomande, filtraQuestionario, myDomande, idQuestionari, chiudiQuestionario, compilaQuestionario, questionari,  aggiungiDomandeQuestionario, questionarioselezionato } = props;
-  const {setGlobalUser, submitButton } = props
+  const {setGlobalUser, submitButton, setRisposteGlobali, verificaRisposte, message } = props
   const [ domande, setDomande] = useState([])
   const [ showDomanda, setShowDomanda] = useState()
   const [did, setDid] = useState(0);
@@ -272,21 +310,24 @@ const QuestionarioManager = (props) => {
   }
 
   return (<>
-        <Col xs={3} bg="light" className="below-nav" id="left-sidebar">
+        <Col xs={3} bg="light" className="below-nav" id="left-sidebar" key={"filtri"}>
           {mode === 'view' && <Filters items={questionari} filtraQuestionario={filtraQuestionario} setShowCompila={setShowCompila}/>}
           {mode === 'compila' && <DomandeMenu items={opzioneDomande} aggiungiDomanda={aggiungiDomanda} />}
         </Col>      
-      <Col xs={9} className="below-nav" id="main">
+      <Col xs={9} className="below-nav" id="main" key={"main"} >
         {mode ==="view" && <><h2 className="pb-3">{questionarioselezionato.titolo} <small className="text-muted"></small>
                                 </h2>
-                              <ContentList  questionList={myDomande}  SpostaElementi={SpostaElementi}  />
-                              <Row className="justify-content-md-center pt-3">
+                                {message.msg!==null && message.map((t,i) =>  <Alert key={i} variant={"danger"}>
+    {t.msg} {t.domanda}
+  </Alert>)}
+                              <ContentList key={myDomande.length} questionList={myDomande}  SpostaElementi={SpostaElementi} setRisposteGlobali={setRisposteGlobali} />
+                              <Row className="justify-content-md-center pt-3"  id="tasti">
                               <Col md="auto">
-                              { showCompila &&  <Button variant="success" onClick={()=>{setGlobalUser(s=>!s); setShowCompila(false)}}>Compila</Button> }
-                              { submitButton && <Button variant="danger">Invia </Button>}
+                              { showCompila &&  <Button key={"compila"}variant="success" onClick={()=>{setGlobalUser(s=>!s); setShowCompila(false)}}>Compila</Button> }
+                              { submitButton && <Button key={"invia"}variant="danger"onClick={()=>verificaRisposte(setShowCompila)}>Invia </Button>}
                               </Col>
                               </Row>
-                              
+  
                               </>}
         {mode ==="create" && <FormPersonale chiudiQuestionario={chiudiQuestionario} compilaQuestionario={compilaQuestionario}/> }
         {mode === "compila" && <><h3 className="pb-3">Questionario: <span className="text-muted">{questionari[idQuestionari].titolo}</span>

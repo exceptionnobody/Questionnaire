@@ -166,7 +166,7 @@ const utente = {
 app.post("/api/risposte", async (req, res) => {
 
   let risposta;
-  if ( req.body.numrisposte > 1){
+  if ( req.body.tipo===1 && req.body.numrisposte >= 1){
   
   risposta = {
     domanda: req.body.domanda,
