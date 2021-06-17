@@ -79,14 +79,14 @@ const OptionData = (props) => {
         let rispostaData;
         for(const v of temp){
           if(v.domanda === domanda.did && value){
-            rispostaData = `risposta${id+1}`
+            rispostaData = `opzione${id+1}`
             v[rispostaData] = 1;
             v.numrisposte++;
             
            
           }
           if(v.domanda === domanda.did && !value){
-            rispostaData = `risposta${id+1}`
+            rispostaData = `opzione${id+1}`
             v[rispostaData] = 0;
             v.numrisposte--;
            }
