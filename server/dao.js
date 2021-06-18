@@ -217,7 +217,7 @@ exports.ottieniRisposteDaUtente = (utente) => {
     INNER JOIN utenti U ON R.user = U.id
     WHERE Q.qid=? AND U.id=?`;
 
-    db.all(sql, [utente.questionario, utente.id], (err, row) => {
+    db.all(sql, [utente.questionario, utente.utente], (err, row) => {
       if (err) {
         reject(err);
         return;

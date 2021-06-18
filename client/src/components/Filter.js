@@ -9,7 +9,7 @@ const Filters = (props) => {
           items.map((t,i) => {
             const valid= i
             return (
-              <ListGroup.Item disabled={false} as="a" key={t.qid} onClick={()=>{filtraQuestionario(valid); setShowCompila(true); console.log(valid)}} action>{t.titolo}{' '}{loggedIn&& <Button variant="danger" disabled>{t.numutenti}</Button>}</ListGroup.Item>
+              <ListGroup.Item disabled={false} as="a" key={t.qid} onClick={()=>{filtraQuestionario(valid); setShowCompila(true); console.log(valid)}} action>{t.titolo}&nbsp;&nbsp;&nbsp;{loggedIn&& <span>{t.numutenti}</span>}</ListGroup.Item>
             );
           })
         }

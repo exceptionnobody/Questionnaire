@@ -59,7 +59,6 @@ const verificaRisposte = async (funzione)=>{
     for(const v of risposteGlobali){
       const temp = Object.assign({},v)
       temp.user = utilizzatore.id
-      console.log(temp)
       await  API.inserisciRisposta(temp)
     }
     await API.aggiornaNumUtentiQuestionario({qid:questionarioselezionato.qid})
@@ -109,8 +108,8 @@ const registraUser = (user) => {
       API.inserisciUnNuovoQuestionario(questionariovett[idQuestionari]).then(result => {
         questionariovett[idQuestionari].qid = result;
         
-     console.log("QID nuovo questionario: "+ questionariovett[idQuestionari].qid)
-     console.log(questionariovett[idQuestionari])
+    // console.log("QID nuovo questionario: "+ questionariovett[idQuestionari].qid)
+    // console.log(questionariovett[idQuestionari])
         setQuestionari(questionariovett) 
         setMode('compila')
       }      
@@ -130,10 +129,13 @@ const registraUser = (user) => {
       setAdmin(adminServer)
       console.log(adminServer)
       setLoggedIn(true);
+      
+    setVisualizzaDomande([])
+    setQuestionarioselezionato([])
 
-      setWelcomeAdmin({msg: `Welcome ${adminServer.name}`, color: adminServer.color})
+      setWelcomeAdmin({msg: `Welcome ${adminServer.name}`, color: adminServer.color});
 
-      setLoading(true);
+      //setLoading(true);
       <Redirect to="/"/>
 
       // il valore di loggedIn non cambia
@@ -191,70 +193,40 @@ const registraUser = (user) => {
     setQuestionari([]);
 
     setAdmin({id:null});
-    setMode('view');
     setDomande([]);
-    setLoading(true)
+    setLoading(true);
+    setIdQuestionari(0)
+    setVisualizzaDomande([])
+    setQuestionarioselezionato([])
     setWelcomeAdmin({msg: ""});
 
   }
 
   useEffect(() => {
 
-    async function caricaQuestionari() {
+    async function caricaQuestionari(madmin) {
 
-      const result = API.ottieniMieiQuestionari(admin.id)
+      const result = await API.ottieniMieiQuestionari(madmin.id)
       
       return result
            
     }
 
-    if (loading) {
-
-      caricaQuestionari().then((result) => { 
+  
+      caricaQuestionari(admin).then((result) => { 
         
        console.log(result) 
        setQuestionari(result);
-       setIdQuestionari(result.length-1); 
-        setLoading(false) 
+       setIdQuestionari(result.length-1);
+       setLoading(true) 
         setMode('view') 
       })
 
-    }
+  
 
-  }, [loading, admin.id])
+  }, [admin])
 
-
-  useEffect(() => {
-
-    async function caricaUtilizzatori() {
-      let temp=[];
-      let risposta;
-      const utenti = await API.ottieniUtentiMieiQuestionari(admin.id)
-      setUtilizzatore(utenti)
-      console.log(utenti)
-      for(let i=0; i< utenti.length; i++){
-          risposta = await API.ottieniRisposteiMieiQuestionari(utenti[i].questionario, utenti[i].id)
-          temp.push(risposta)
-      }
-      console.log(temp)
-      return temp
-           
-    }
-
-    if (loggedIn) {
-
-      caricaUtilizzatori().then((result) => { 
-        console.log("Risposte: ")
-       console.log(result); 
-      })
-
-    }
-
-  }, [loggedIn, admin.id])
-
-
-
-
+ 
   useEffect(() => {
 
     async function caricaDomande() {
@@ -264,8 +236,8 @@ const registraUser = (user) => {
       return result
     }
       
-    if (questionari.length || contaDomande) {
-      caricaDomande().then(result => {
+    if (loading) {
+      caricaDomande(admin).then(result => {
 
         for(const v of result){
           if(v.tipo){
@@ -277,15 +249,69 @@ const registraUser = (user) => {
             v.opzioni = [...arr]
           }
         }
-        console.log(result)
 
 
         setDomande(result); 
         setContaDomande(result.length)
+        setLoading(false)
       })
     }
 
-  }, [questionari.length, contaDomande, admin.id])
+  }, [loading,  admin])
+
+  useEffect(() => {
+
+    async function caricaUtilizzatori(tadmin) {
+      let temp1=[];
+      let temp2=[]
+      let risposta;
+      const utenti = await API.ottieniUtentiMieiQuestionari(tadmin.id)
+      setUtilizzatore(utenti)
+      console.log(utenti)
+      console.log(utenti.length)
+      for(const u of utenti){
+          risposta = await API.ottieniRisposteiMieiQuestionari(u.questionario, u.id)
+          for(const p of risposta)
+            temp1.push(p)
+      }
+      let k=[...questionari]
+      temp2 = []
+      for(const z of k){
+        for(const u of utenti){
+          if(u.questionario === z.qid){
+            temp2.push(u)
+          } 
+        }
+        z.utenti = [...temp2]
+        temp2=[]
+        for(const t of domande){
+          for(const k of temp1){
+            if(k.domanda === t.id && t.questionario === z.qid)
+            temp2.push(k)
+          }
+        }
+        z.risposte = [...temp2]
+        
+
+      }
+      console.log(k)
+
+      return temp1
+           
+    }
+
+    if (loggedIn && questionari.length !== idQuestionari+1) {
+
+      caricaUtilizzatori(admin).then((result) => { 
+        console.log("Risposte: ")
+       console.log(result); 
+      })
+
+    }
+
+  }, [loggedIn, admin, questionari, domande, idQuestionari])
+
+
 
   return (
 

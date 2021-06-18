@@ -214,8 +214,8 @@ async function ottieniUtentiMieiQuestionari(id) {
   }
 }
 
-async function ottieniRisposteiMieiQuestionari(id_user, id_questionario) {
-  const response = await fetch(baseURL + '/risposte?questionario='+id_questionario+"&user="+id_user);
+async function ottieniRisposteiMieiQuestionari(id_questionario, id_user) {
+  const response = await fetch(baseURL + '/risposte?questionario='+id_questionario+"&utente="+id_user);
   const userInfo = await response.json();
   if (response.ok) {
     return userInfo;

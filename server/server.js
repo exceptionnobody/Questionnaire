@@ -289,7 +289,7 @@ console.log(risposta)
     
     obj = {
       questionario: +req.query.questionario,
-      id: +req.query.user
+      utente: +req.query.utente
        
   }
   console.log(obj)
