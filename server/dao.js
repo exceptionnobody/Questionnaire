@@ -75,7 +75,8 @@ exports.getAllMyQuestionnaire = (admin) => {
         const questionari = rows.map(t => ({
           qid: t.qid,
           titolo: t.titolo,
-          numdomande: t.numdomande
+          numdomande: t.numdomande,
+          numutenti: t.numutenti
         }))
         resolve(questionari);
       }
@@ -205,8 +206,50 @@ exports.aggiornaNumUtenti = (qid) => {
   });
 
 }
-/*
-UPDATE questionari
-SET numutenti = numutenti+1
-WHERE qid=1
-*/
+
+exports.ottieniRisposteDaUtente = (utente) => {
+  return new Promise((resolve, reject) => {
+
+    const sql = `SELECT R.*
+    FROM questionari Q
+    INNER JOIN domande D ON D.questionario = Q.qid
+    INNER JOIN risposte R ON R.domanda = D.did
+    INNER JOIN utenti U ON R.user = U.id
+    WHERE Q.qid=? AND U.id=?`;
+
+    db.all(sql, [utente.questionario, utente.id], (err, row) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      if (row == undefined) {
+        resolve({ error: 'Task not found.' });
+      } else {
+        resolve(row);
+      }
+    });
+  })
+}
+
+exports.ottieniUtentiDatoAdmin = (admin) => {
+  return new Promise((resolve, reject) => {
+
+    const sql = `SELECT U.*
+    FROM questionari Q
+    INNER JOIN admin A ON Q.admin = A.id
+    INNER JOIN utenti U ON U.questionario = Q.qid
+    WHERE A.id=?`;
+
+    db.all(sql, [admin.admin], (err, row) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      if (row == undefined) {
+        resolve({ error: 'Task not found.' });
+      } else {
+        resolve(row);
+      }
+    });
+  })
+}

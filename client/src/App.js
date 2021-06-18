@@ -16,7 +16,7 @@ import DomandaChiusa from './components/DomandaChiusa';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 
 function App() {
-
+  const [welcomeAdmin, setWelcomeAdmin] = useState({})
   const [mode, setMode]=useState('precarica')
   const [idQuestionari, setIdQuestionari] = useState(0)
   const [questionari, setQuestionari] =useState([])
@@ -25,7 +25,6 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [domande, setDomande] = useState([])
   const [visualizzaDomande, setVisualizzaDomande] = useState([])
-  const [adminId] = useState(null)
   const [message, setMessage] = useState({msg:null});
   const [globalUser, setGlobalUser] = useState(false)
   const [submitButton, setSubimitButton] = useState(false)
@@ -33,8 +32,8 @@ function App() {
   const [utilizzatore, setUtilizzatore] = useState(null)
   const [idTemporaneoDopoCompilazione, setIdTemporaneo] = useState(0)
   const [loggedIn, setLoggedIn] = useState(false);
-  const [bloccaRisposte, setBloccaRisposte] = useState(true)
-  const [admin, setAdmin] = useState({})
+  const [bloccaRisposte] = useState(true)
+  const [admin, setAdmin] = useState({id:null})
 
   const aggiungiQuestionario = ()=>{
       setMode('create');
@@ -105,7 +104,7 @@ const registraUser = (user) => {
   const compilaQuestionario = (nameq) => {
       const questionariovett = [...questionari]
 
-      questionariovett[idQuestionari] = {qid: idQuestionari , titolo: nameq, admin:adminId, numdomande:0, numutenti:0}
+      questionariovett[idQuestionari] = {qid: idQuestionari , titolo: nameq, admin:admin.id, numdomande:0, numutenti:0}
 
       API.inserisciUnNuovoQuestionario(questionariovett[idQuestionari]).then(result => {
         questionariovett[idQuestionari].qid = result;
@@ -129,8 +128,10 @@ const registraUser = (user) => {
       console.log("Login effettuato corretamente");
 
       setAdmin(adminServer)
-
+      console.log(adminServer)
       setLoggedIn(true);
+
+      setWelcomeAdmin({msg: `Welcome ${adminServer.name}`, color: adminServer.color})
 
       setLoading(true);
       <Redirect to="/"/>
@@ -179,11 +180,29 @@ const registraUser = (user) => {
     setIdTemporaneo(id)
   }
 
+  const doLogOut = async () => {
+
+
+
+    await API.logOut();
+
+    setLoggedIn(false);
+
+    setQuestionari([]);
+
+    setAdmin({id:null});
+    setMode('view');
+    setDomande([]);
+    setLoading(true)
+    setWelcomeAdmin({msg: ""});
+
+  }
+
   useEffect(() => {
 
     async function caricaQuestionari() {
 
-      const result = API.ottieniMieiQuestionari(adminId)
+      const result = API.ottieniMieiQuestionari(admin.id)
       
       return result
            
@@ -202,13 +221,45 @@ const registraUser = (user) => {
 
     }
 
-  }, [loading, adminId])
+  }, [loading, admin.id])
+
+
+  useEffect(() => {
+
+    async function caricaUtilizzatori() {
+      let temp=[];
+      let risposta;
+      const utenti = await API.ottieniUtentiMieiQuestionari(admin.id)
+      setUtilizzatore(utenti)
+      console.log(utenti)
+      for(let i=0; i< utenti.length; i++){
+          risposta = await API.ottieniRisposteiMieiQuestionari(utenti[i].questionario, utenti[i].id)
+          temp.push(risposta)
+      }
+      console.log(temp)
+      return temp
+           
+    }
+
+    if (loggedIn) {
+
+      caricaUtilizzatori().then((result) => { 
+        console.log("Risposte: ")
+       console.log(result); 
+      })
+
+    }
+
+  }, [loggedIn, admin.id])
+
+
+
 
   useEffect(() => {
 
     async function caricaDomande() {
 
-      const result = API.ottieniDomande(adminId)
+      const result = API.ottieniDomande(admin.id)
       
       return result
     }
@@ -234,18 +285,18 @@ const registraUser = (user) => {
       })
     }
 
-  }, [questionari.length, contaDomande, adminId])
+  }, [questionari.length, contaDomande, admin.id])
 
   return (
 
     <Container fluid>
       <Router>
-      <Navigation setGlobalUser={setGlobalUser} globalUser={globalUser} registraUser={registraUser}/>
+      <Navigation setGlobalUser={setGlobalUser} globalUser={globalUser} registraUser={registraUser} loggedIn={loggedIn} message={welcomeAdmin} doLogOut={doLogOut}/>
       <Switch>
       <Route exact path="/">
       <Row className="vh-100">
 
-      <QuestionarioManager  bloccaRisposte={bloccaRisposte}
+      <QuestionarioManager  bloccaRisposte={bloccaRisposte} loggedIn={loggedIn}
       submitButton={submitButton} setRisposteGlobali={setRisposteGlobali} verificaRisposte={verificaRisposte}
       contaDomande={contaDomande} myDomande={visualizzaDomande} setGlobalUser={setGlobalUser} message={message}
       questionari={questionari} setQuestionari={setQuestionari}  setMode={setMode} aggiungiDomandeQuestionario={aggiungiDomandeQuestionario}
@@ -277,13 +328,12 @@ const registraUser = (user) => {
 const QuestionarioManager = (props) => {
 
   const {mode, contaDomande, filtraQuestionario, myDomande, idQuestionari, chiudiQuestionario, compilaQuestionario, questionari,  aggiungiDomandeQuestionario, questionarioselezionato } = props;
-  const {setGlobalUser, submitButton, setRisposteGlobali, verificaRisposte, message } = props
+  const {setGlobalUser, submitButton, setRisposteGlobali, verificaRisposte, message, loggedIn } = props
   const [ domande, setDomande] = useState([])
   const [ showDomanda, setShowDomanda] = useState()
   const [did, setDid] = useState(0);
   const [modo, setModo] = useState('')
   const [showCompila, setShowCompila] = useState(false)
-  const [flagBlocca, setFlagblocca] =useState(submitButton?true:false)
   const pubblicaQuestionario= () =>{
     let newId;
     if(domande.length >=1){
@@ -354,7 +404,7 @@ const QuestionarioManager = (props) => {
 
   return (<>
         <Col xs={3} bg="light" className="below-nav" id="left-sidebar" key={"filtri"}>
-          {(mode === 'view' || mode==="compilaUtente") && <Filters items={questionari} filtraQuestionario={filtraQuestionario} setShowCompila={setShowCompila}/>}
+          {(mode === 'view' || mode==="compilaUtente") && <Filters items={questionari} filtraQuestionario={filtraQuestionario} setShowCompila={setShowCompila} loggedIn={loggedIn}/>}
           {mode === 'compila' && <DomandeMenu items={opzioneDomande} aggiungiDomanda={aggiungiDomanda} />}
         </Col>      
       <Col xs={9} className="below-nav" id="main" key={"main"} >

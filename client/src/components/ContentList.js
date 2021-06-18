@@ -1,6 +1,8 @@
 import React, {useState} from 'react'
-import { Form, ListGroup, Button, Row, Badge, Col } from 'react-bootstrap/';
+import { Form, ListGroup, Button,  Badge } from 'react-bootstrap/';
 import { PencilSquare, Trash, ArrowDown, ArrowUp } from 'react-bootstrap-icons';
+
+const FAKERISPOSTE = {}
 
 const OptionData = (props) => {
     const { optionsList } = props;

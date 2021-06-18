@@ -204,7 +204,29 @@ async function getUserInfo() {
 }
 
 
+async function ottieniUtentiMieiQuestionari(id) {
+  const response = await fetch(baseURL + '/utenti?admin='+id);
+  const userInfo = await response.json();
+  if (response.ok) {
+    return userInfo;
+  } else {
+    throw userInfo;  // an object with the error coming from the server
+  }
+}
+
+async function ottieniRisposteiMieiQuestionari(id_user, id_questionario) {
+  const response = await fetch(baseURL + '/risposte?questionario='+id_questionario+"&user="+id_user);
+  const userInfo = await response.json();
+  if (response.ok) {
+    return userInfo;
+  } else {
+    throw userInfo;  // an object with the error coming from the server
+  }
+}
+
+
 const API = {ottieniDomande, inserisciUtente, inserisciRisposta, aggiornaNumUtentiQuestionario, logIn, logOut, getUserInfo,
+  ottieniUtentiMieiQuestionari, ottieniRisposteiMieiQuestionari,
   inserisciUnNuovoQuestionario, inserisciUnNuovaDomandaAperta, inserisciUnNuovaDomandaChiusa, ottieniMieiQuestionari};
 
 export default API;

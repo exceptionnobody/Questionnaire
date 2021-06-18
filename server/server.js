@@ -280,6 +280,39 @@ console.log(risposta)
                 .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
   })
 
+// Dato un questionario mi dà tutte le risposte di un dato user
+// Parametrica: questionario=valore&user=valore;
+  app.get("/api/risposte", async (req, res) => {
+
+    let obj;
+   
+    
+    obj = {
+      questionario: +req.query.questionario,
+      id: +req.query.user
+       
+  }
+  console.log(obj)
+      dao.ottieniRisposteDaUtente(obj).then((risultato)=>{res.status(200).json(risultato).end()})
+                  .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
+    })
+
+// Mi serve trovare tutti gli utenti che hanno risposto ai questionari di un dato admin
+// Parametrica: ?admin=valore
+app.get("/api/utenti", async (req, res) => {
+
+  let obj;
+ 
+  
+  obj = {
+    admin: +req.query.admin,
+     
+}
+console.log(obj)
+    dao.ottieniUtentiDatoAdmin(obj).then((risultato)=>{res.status(200).json(risultato).end()})
+                .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
+  })
+
 
 // activate the server
 app.listen(port, () => {
