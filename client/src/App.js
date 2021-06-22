@@ -33,8 +33,9 @@ function App() {
   const [utilizzatore, setUtilizzatore] = useState(null)
 
   const [utenti, setUtenti] = useState(null)
-  const [idUtente, setIdUtente] = useState(0)
+  const [idUtente, setIdUtente] = useState(null)
   const [numeroUtentiTotali, setNumeroUtentiTotali] = useState(0)
+  const [ricaricaUtenti, setRicaricaUtenti] = useState(true)
   const [utentiSelezionati, setUtentiSelezionati] = useState([])
   const [numeroUtentiSelezionati, setNumeroUtentiSelezionati] = useState(0)
   const [idTemporaneoDopoCompilazione, setIdTemporaneo] = useState(0)
@@ -139,9 +140,9 @@ const registraUser = (user) => {
       setUtilizzatore(null)
       setVisualizzaDomande([])
       setQuestionarioselezionato({})
-
+      setIdUtente(null)
       setWelcomeAdmin({msg: `Welcome ${adminServer.name}`, color: adminServer.color});
-
+      setRicaricaUtenti(true);
       //setLoading(true);
       <Redirect to="/"/>
 
@@ -184,21 +185,8 @@ const registraUser = (user) => {
 
     })
     
-    //console.log(tempQuestionario)
- /*   
-    for(const vv of domandeQuestionarioProv){
-      
-      if(vv.tipo === 0)
-           API.inserisciUnNuovaDomandaAperta(vv).then(did=> {vv.did=did; })
-       else
-           API.inserisciUnNuovaDomandaChiusa(vv).then(did=> {vv.did=did;})
-      }
-      console.log(tempQuestionario)
-      setContaDomande(s => s+domandeQuestionarioProv.length)  
-      setMode('view')
-      setLoading(true)
-      setIdQuestionari(s => s+1)
-    */} 
+
+} 
 
   const filtraQuestionario = (id) => {
 
@@ -207,13 +195,14 @@ const registraUser = (user) => {
     //console.log("ID QUESTIONARIO NELL'ARRAY: "+id)
     setVisualizzaDomande(domande.filter(d => d.questionario === questionari[id].qid))
 
-    setUtentiSelezionati(loggedIn ? [...utenti.filter(d => d.questionario === questionari[id].qid)]:[])
+    if(loggedIn){
+      
+    setUtentiSelezionati([...utenti.filter(d => d.questionario === questionari[id].qid)])
 
-    setNumeroUtentiSelezionati(loggedIn ?[...utenti.filter(d => d.questionario === questionari[id].qid)].length:0 )
+    setNumeroUtentiSelezionati([...utenti.filter(d => d.questionario === questionari[id].qid)].length)
 
     setIdUtente(0) 
-    console.log(utentiSelezionati)
-
+    }
     setIdTemporaneo(id)
   }
 
@@ -255,19 +244,19 @@ const registraUser = (user) => {
            
     }
 
-  
+    if(ricaricaUtenti){
       caricaQuestionari(admin).then((result) => { 
         
        console.log(result) 
        setQuestionari(result);
        setIdQuestionari(result.length?result.length-1:0);
        setLoading(true) 
-        setMode('view') 
+       setMode('view') 
       })
 
-  
+    }
 
-  }, [admin])
+  }, [ricaricaUtenti, admin])
 
  
   useEffect(() => {
@@ -341,17 +330,19 @@ const registraUser = (user) => {
            
     }
 
-    if (loggedIn && utenti === null) {
+    if (loggedIn && ricaricaUtenti) {
 
       caricaUtilizzatori(admin).then((result) => { 
        setUtenti(result) 
        setUtilizzatore(result)
        setNumeroUtentiTotali(result.length)
+       setRicaricaUtenti(false)
+       console.log("TEST")
       })
 
     }
 
-  }, [loggedIn, utenti, admin, domande])
+  }, [loggedIn, utenti, admin, domande, ricaricaUtenti])
 
 
 
@@ -368,7 +359,7 @@ const registraUser = (user) => {
       submitButton={submitButton} setRisposteGlobali={setRisposteGlobali} verificaRisposte={verificaRisposte} incrementeIdUtente={incrementeIdUtente} decrementaIdUtente={decrementaIdUtente}
       contaDomande={contaDomande} myDomande={visualizzaDomande} setGlobalUser={setGlobalUser} message={message}
       questionari={questionari} setQuestionari={setQuestionari}  setMode={setMode} aggiungiDomandeQuestionario={aggiungiDomandeQuestionario}
-      questionarioselezionato={questionarioselezionato} filtraQuestionario={filtraQuestionario}
+      questionarioselezionato={questionarioselezionato} filtraQuestionario={filtraQuestionario} setRicaricaUtenti={setRicaricaUtenti}
       mode={mode} idQuestionari={idQuestionari} chiudiQuestionario={chiudiQuestionario} compilaQuestionario={compilaQuestionario} >
 
 
@@ -396,7 +387,7 @@ const registraUser = (user) => {
 const QuestionarioManager = (props) => {
 
   const {mode, contaDomande, filtraQuestionario, myDomande, idQuestionari, chiudiQuestionario, compilaQuestionario, questionari,  aggiungiDomandeQuestionario, questionarioselezionato } = props;
-  const {setGlobalUser, submitButton, setRisposteGlobali, verificaRisposte, message, loggedIn, utentiSelezionati, lunghezzautenti, idUtente, incrementeIdUtente, decrementaIdUtente } = props
+  const {setGlobalUser, submitButton, setRisposteGlobali, verificaRisposte, message, loggedIn, utentiSelezionati, lunghezzautenti, idUtente, incrementeIdUtente, decrementaIdUtente, setRicaricaUtenti } = props
   const [ domande, setDomande] = useState([])
   const [ showDomanda, setShowDomanda] = useState()
   const [did, setDid] = useState(0);
@@ -474,7 +465,7 @@ const QuestionarioManager = (props) => {
 
   return (<>
         <Col xs={3} bg="light" className="below-nav" id="left-sidebar" key={"filtri"}>
-          {(mode === 'view' || mode==="compilaUtente") && <Filters items={questionari} filtraQuestionario={filtraQuestionario} setShowCompila={setShowCompila} loggedIn={loggedIn}/>}
+          {(mode === 'view' || mode==="compilaUtente") && <Filters items={questionari} filtraQuestionario={filtraQuestionario} setShowCompila={setShowCompila} loggedIn={loggedIn} setRicaricaUtenti={setRicaricaUtenti}/>}
           {mode === 'compila' && <DomandeMenu items={opzioneDomande} aggiungiDomanda={aggiungiDomanda} />}
         </Col>      
       <Col xs={9} className="below-nav" id="main" key={"main"} >
@@ -505,10 +496,10 @@ const QuestionarioManager = (props) => {
                               </Row>  
                             </>  }
         { loggedIn && mode==='view' && <>
-        <h2 className="pb-3">{questionarioselezionato.titolo}  <small className="text-muted">{utentiSelezionati.length?utentiSelezionati[idUtente].nome:null}
-        { lunghezzautenti >1 && idUtente !== 0 &&  <Button variant="primary" size="sm" onClick={()=>decrementaIdUtente()}>  <ArrowLeft></ArrowLeft>
+        <h2 className="pb-3">{questionarioselezionato.titolo}  <small className="text-muted">{(idUtente!==null&&lunghezzautenti>=1)?utentiSelezionati[idUtente].nome:null}
+        { idUtente!==null&&lunghezzautenti >1 && idUtente !== 0 &&  <Button variant="primary" size="sm" onClick={()=>decrementaIdUtente()}>  <ArrowLeft></ArrowLeft>
     </Button>}
-          { lunghezzautenti >1 && idUtente !== (lunghezzautenti-1) &&  <Button variant="primary" size="sm" onClick={()=>incrementeIdUtente()}>  <ArrowRight></ArrowRight>
+          { idUtente!==null&&lunghezzautenti >1 && idUtente !== (lunghezzautenti-1) &&  <Button variant="primary" size="sm" onClick={()=>incrementeIdUtente()}>  <ArrowRight></ArrowRight>
     </Button>} 
     
     </small>

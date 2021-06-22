@@ -9,7 +9,7 @@ const DomandaAperta = (props)=>{
 
     const sottometti=(event)=>{
         event.preventDefault();
-    const  domanda = {did: props.did, qid: Qid, modificabile:true, quesito: quesito, min: obbligatoria?1:0, max:obbligatoria?1:0, numopzioni: 1, tipo:0, obbligatoria:obbligatoria?1:0 }
+    const  domanda = {did: props.did, qid: Qid, modificabile:true, quesito: quesito, min: obbligatoria?1:0, max:1, numopzioni: 1, tipo:0, obbligatoria:obbligatoria?1:0 }
         props.aggiungiDomanda(domanda);
     }
 return <Accordion defaultActiveKey="0">
