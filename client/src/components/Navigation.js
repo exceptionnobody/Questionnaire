@@ -33,7 +33,7 @@ const Navigation = (props) => {
 
 <button type="button" className="navbar-nav ml-md-auto btn-danger btn-sm" disabled>
 
-&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp; 
 
 <span>{message.msg}</span>
 

@@ -127,13 +127,13 @@ exports.createQuestionario = (quest) => {
 
 exports.inserisciDomandeAperta = (domanda) => {
   return new Promise((resolve, reject) => {
-    const sql = "INSERT INTO domande(questionario, quesito, tipo, numopzioni, min, max) VALUES(?,?,?,?,?,?)";
-    db.run(sql, [domanda.qid, domanda.quesito, domanda.tipo, domanda.numopzioni, domanda.min, domanda.max], function (err) {
+    const sql = "INSERT INTO domande(questionario, quesito, tipo, numopzioni, obbligatoria, min, max) VALUES(?,?,?,?,?,?,?)";
+    db.run(sql, [domanda.qid, domanda.quesito, domanda.tipo, domanda.numopzioni, domanda.obbligatoria, domanda.min, domanda.max], function (err) {
       if (err) {
         reject(err);
       }
       resolve(this.lastID);
-    });
+    }); 
     
   });
 };
@@ -141,7 +141,7 @@ exports.inserisciDomandeAperta = (domanda) => {
 
 exports.inserisciDomandeChiusa = (domanda) => {
   return new Promise((resolve, reject) => {
-    const sql = "INSERT INTO domande(questionario, quesito, tipo, numopzioni, obbligatoria, min, max, opzione1, opzione2, opzione3, opzione4, opzione5, opzione6, opzione7, opzione8, opzione9, opzione10) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    const sql = "INSERT INTO domande(questionario, quesito, tipo, numopzioni, obbligatoria, min, max, opzione1, opzione2, opzione3, opzione4, opzione5, opzione6, opzione7, opzione8, opzione9, opzione10) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     db.run(sql, [domanda.qid, domanda.quesito, domanda.tipo, domanda.numopzioni, domanda.obbligatoria, domanda.min, domanda.max, domanda.opzione1?domanda.opzione1:null, domanda.opzione2? domanda.opzione2:null, domanda.opzione3?domanda.opzione3:null, domanda.opzione4?domanda.opzione4:null, domanda.opzione5?domanda.opzione5:null, domanda.opzione6?domanda.opzione6:null, domanda.opzione7?domanda.opzione7:null, domanda.opzione8?domanda.opzione8:null, domanda.opzione9?domanda.opzione9:null, domanda.opzione10?domanda.opzione10:null], function (err) {
       if (err) {
         reject(err);
@@ -182,8 +182,8 @@ exports.inserisciUser = (user) => {
 
 exports.inseriscRisposte = (risposta) => {
   return new Promise((resolve, reject) => {
-    const sql = `INSERT INTO risposte (domanda, user, numrisposte, opzione1, opzione2, opzione3, opzione4, opzione5, opzione6, opzione7, opzione8, opzione9, opzione10, opzioneaperta) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-    db.run(sql, [risposta.domanda, risposta.user, risposta.numrisposte, risposta.opzione1?risposta.opzione1:null, risposta.opzione2?risposta.opzione2:null, risposta.opzione3?risposta.opzione3:null, risposta.opzione4?risposta.opzione4:null, risposta.opzione5?risposta.opzione5:null, risposta.opzione6?risposta.opzione6:null, risposta.opzione7?risposta.opzione7:null, risposta.opzione8?risposta.opzione8:null, risposta.opzione9?risposta.opzione9:null, risposta.opzione10?risposta.opzione10:null, risposta.opzioneaperta?risposta.opzioneaperta:null], function (err) {
+    const sql = `INSERT INTO risposte (domanda, user, numrisposte, tipo, opzione1, opzione2, opzione3, opzione4, opzione5, opzione6, opzione7, opzione8, opzione9, opzione10, opzioneaperta) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+    db.run(sql, [risposta.domanda, risposta.user, risposta.numrisposte, risposta.tipo, risposta.opzione1?risposta.opzione1:null, risposta.opzione2?risposta.opzione2:null, risposta.opzione3?risposta.opzione3:null, risposta.opzione4?risposta.opzione4:null, risposta.opzione5?risposta.opzione5:null, risposta.opzione6?risposta.opzione6:null, risposta.opzione7?risposta.opzione7:null, risposta.opzione8?risposta.opzione8:null, risposta.opzione9?risposta.opzione9:null, risposta.opzione10?risposta.opzione10:null, risposta.opzioneaperta?risposta.opzioneaperta:null], function (err) {
       if (err) {
         reject(err);
       }
@@ -197,6 +197,21 @@ exports.aggiornaNumUtenti = (qid) => {
   return new Promise((resolve, reject) => {
     const sql = `UPDATE questionari SET numutenti=numutenti+1 WHERE qid=?`;
     db.run(sql, [qid.qid], function (err) {
+      if (err) {
+        reject(err);
+      }
+      resolve(this.changes);
+      console.log(`Row(s) updated: ${this.changes}`);
+    });
+  });
+
+}
+
+
+exports.aggiornaNumDomande = (questionario) => {
+  return new Promise((resolve, reject) => {
+    const sql = `UPDATE questionari SET numdomande=? WHERE qid=?`;
+    db.run(sql, [questionario.numdomande, questionario.qid], function (err) {
       if (err) {
         reject(err);
       }

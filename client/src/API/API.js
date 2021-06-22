@@ -166,6 +166,28 @@ async function aggiornaNumUtentiQuestionario(questionario){
 });
 }
 
+async function aggiornaNumDomandeQuestionario(questionario){
+  let url = "/domande";
+  return new Promise((resolve, reject) => {
+  fetch(baseURL+url, {
+      method: 'PUT',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(questionario)
+  }).then((response) => {
+      if (response.ok) {
+        resolve(null);
+      } else {
+        // analyze the cause of error
+        response.json()
+          .then((obj) => { reject(obj); }) // error msg in the response body
+          .catch((err) => { reject({ errors: [{ param: "Application", msg: "Cannot parse server response" }] }) }); // something else
+      }
+    }).catch((err) => { reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] }) }); // connection errors
+});
+}
+
 async function logIn(credentials) {
   let response = await fetch(baseURL +'/sessions', {
     method: 'POST',
@@ -226,7 +248,7 @@ async function ottieniRisposteiMieiQuestionari(id_questionario, id_user) {
 
 
 const API = {ottieniDomande, inserisciUtente, inserisciRisposta, aggiornaNumUtentiQuestionario, logIn, logOut, getUserInfo,
-  ottieniUtentiMieiQuestionari, ottieniRisposteiMieiQuestionari,
+  ottieniUtentiMieiQuestionari, ottieniRisposteiMieiQuestionari, aggiornaNumDomandeQuestionario,
   inserisciUnNuovoQuestionario, inserisciUnNuovaDomandaAperta, inserisciUnNuovaDomandaChiusa, ottieniMieiQuestionari};
 
 export default API;

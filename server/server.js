@@ -183,6 +183,20 @@ app.post('/api/questionari', async (req, res) => {
 
  })
 
+ app.put('/api/domande', async (req, res) => {
+ 
+  const questionario = {
+    qid: req.body.qid,
+    numdomande: req.body.numdomande
+  };
+
+ console.log(questionario)
+ dao.aggiornaNumDomande(questionario).then((result)=>{
+   console.log("Aggiornamento andato a buon fine "+ result)
+   res.status(201).json(result).end()
+ }).catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
+
+ })
 
 
  app.post('/api/domandeaperte', async (req, res) => {
@@ -260,6 +274,7 @@ app.post("/api/risposte", async (req, res) => {
   risposta = {
     domanda: req.body.domanda,
     user: req.body.user,
+    tipo: req.body.tipo,
     numrisposte: req.body.numrisposte, 
     opzione1: req.body.opzione1, 
     opzione2: req.body.opzione2, 

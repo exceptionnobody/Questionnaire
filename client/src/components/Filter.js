@@ -1,4 +1,4 @@
-import {ListGroup, Button} from 'react-bootstrap/';
+import {ListGroup} from 'react-bootstrap/';
 
 /* get the list of labels to show, the one that is selected and the handler to notify a new selection */
 const Filters = (props) => {
@@ -9,7 +9,7 @@ const Filters = (props) => {
           items.map((t,i) => {
             const valid= i
             return (
-              <ListGroup.Item disabled={false} as="a" key={t.qid} onClick={()=>{filtraQuestionario(valid); setShowCompila(true); console.log(valid)}} action>{t.titolo}&nbsp;&nbsp;&nbsp;{loggedIn&& <span>{t.numutenti}</span>}</ListGroup.Item>
+              <ListGroup.Item disabled={false} as="a" key={t.qid} onClick={()=>{filtraQuestionario(valid); setShowCompila(true)}} action>{t.titolo}&nbsp;&nbsp;&nbsp;{loggedIn&& <span>{t.numutenti}</span>}</ListGroup.Item>
             );
           })
         }

@@ -9,18 +9,7 @@ const DomandaAperta = (props)=>{
 
     const sottometti=(event)=>{
         event.preventDefault();
-        let min, max;
-        let domanda = {}
-        if(obbligatoria){
-            min=max=1;
-            domanda.obbligatoria = 1;
-        }else{
-            min=0;
-            max=1;
-            domanda.obbligatoria = 0;
-        }
-
-        domanda = {did: props.did, qid: Qid, modificabile:true, quesito: quesito, min: min, max:max, numopzioni: 1, tipo:0, ...domanda }
+    const  domanda = {did: props.did, qid: Qid, modificabile:true, quesito: quesito, min: obbligatoria?1:0, max:obbligatoria?1:0, numopzioni: 1, tipo:0, obbligatoria:obbligatoria?1:0 }
         props.aggiungiDomanda(domanda);
     }
 return <Accordion defaultActiveKey="0">
@@ -39,7 +28,7 @@ return <Accordion defaultActiveKey="0">
   </Form.Row>
 
   <Form.Group id="formGridCheckbox">
-    <Form.Check type="checkbox" label="Domanda Obbligatoria" onChange={(ev)=>setObbligatoria(ev.target.checked)}/>
+    <Form.Check type="checkbox" label="Domanda Obbligatoria" onChange={(event)=>{setObbligatoria(event.target.checked); console.log(event.target.checked)}}/>
   </Form.Group>
 
   <Button variant="primary" type="submit">
