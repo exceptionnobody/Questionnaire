@@ -35,7 +35,6 @@ function App() {
   const [utenti, setUtenti] = useState(null)
   const [idUtente, setIdUtente] = useState(null)
   const [numeroUtentiTotali, setNumeroUtentiTotali] = useState(0)
-  const [ricaricaUtenti, setRicaricaUtenti] = useState(true)
   const [utentiSelezionati, setUtentiSelezionati] = useState([])
   const [numeroUtentiSelezionati, setNumeroUtentiSelezionati] = useState(0)
   const [idTemporaneoDopoCompilazione, setIdTemporaneo] = useState(0)
@@ -142,7 +141,6 @@ const registraUser = (user) => {
       setQuestionarioselezionato({})
       setIdUtente(null)
       setWelcomeAdmin({msg: `Welcome ${adminServer.name}`, color: adminServer.color});
-      setRicaricaUtenti(true);
       //setLoading(true);
       <Redirect to="/"/>
 
@@ -195,14 +193,14 @@ const registraUser = (user) => {
     //console.log("ID QUESTIONARIO NELL'ARRAY: "+id)
     setVisualizzaDomande(domande.filter(d => d.questionario === questionari[id].qid))
 
-    if(loggedIn){
-      
-    setUtentiSelezionati([...utenti.filter(d => d.questionario === questionari[id].qid)])
 
-    setNumeroUtentiSelezionati([...utenti.filter(d => d.questionario === questionari[id].qid)].length)
+      
+    setUtentiSelezionati(loggedIn?[...utenti.filter(d => d.questionario === questionari[id].qid)]:[])
+
+    setNumeroUtentiSelezionati(loggedIn?[...utenti.filter(d => d.questionario === questionari[id].qid)].length:0)
 
     setIdUtente(0) 
-    }
+
     setIdTemporaneo(id)
   }
 
@@ -244,7 +242,6 @@ const registraUser = (user) => {
            
     }
 
-    if(ricaricaUtenti){
       caricaQuestionari(admin).then((result) => { 
         
        console.log(result) 
@@ -254,9 +251,9 @@ const registraUser = (user) => {
        setMode('view') 
       })
 
-    }
 
-  }, [ricaricaUtenti, admin])
+
+  }, [admin])
 
  
   useEffect(() => {
@@ -330,19 +327,19 @@ const registraUser = (user) => {
            
     }
 
-    if (loggedIn && ricaricaUtenti) {
+    if (loggedIn && utenti === null) {
 
       caricaUtilizzatori(admin).then((result) => { 
        setUtenti(result) 
        setUtilizzatore(result)
        setNumeroUtentiTotali(result.length)
-       setRicaricaUtenti(false)
+
        console.log("TEST")
       })
 
     }
 
-  }, [loggedIn, utenti, admin, domande, ricaricaUtenti])
+  }, [loggedIn, utenti, admin, domande])
 
 
 
@@ -359,7 +356,7 @@ const registraUser = (user) => {
       submitButton={submitButton} setRisposteGlobali={setRisposteGlobali} verificaRisposte={verificaRisposte} incrementeIdUtente={incrementeIdUtente} decrementaIdUtente={decrementaIdUtente}
       contaDomande={contaDomande} myDomande={visualizzaDomande} setGlobalUser={setGlobalUser} message={message}
       questionari={questionari} setQuestionari={setQuestionari}  setMode={setMode} aggiungiDomandeQuestionario={aggiungiDomandeQuestionario}
-      questionarioselezionato={questionarioselezionato} filtraQuestionario={filtraQuestionario} setRicaricaUtenti={setRicaricaUtenti}
+      questionarioselezionato={questionarioselezionato} filtraQuestionario={filtraQuestionario} 
       mode={mode} idQuestionari={idQuestionari} chiudiQuestionario={chiudiQuestionario} compilaQuestionario={compilaQuestionario} >
 
 
@@ -387,7 +384,7 @@ const registraUser = (user) => {
 const QuestionarioManager = (props) => {
 
   const {mode, contaDomande, filtraQuestionario, myDomande, idQuestionari, chiudiQuestionario, compilaQuestionario, questionari,  aggiungiDomandeQuestionario, questionarioselezionato } = props;
-  const {setGlobalUser, submitButton, setRisposteGlobali, verificaRisposte, message, loggedIn, utentiSelezionati, lunghezzautenti, idUtente, incrementeIdUtente, decrementaIdUtente, setRicaricaUtenti } = props
+  const {setGlobalUser, submitButton, setRisposteGlobali, verificaRisposte, message, loggedIn, utentiSelezionati, lunghezzautenti, idUtente, incrementeIdUtente, decrementaIdUtente } = props
   const [ domande, setDomande] = useState([])
   const [ showDomanda, setShowDomanda] = useState()
   const [did, setDid] = useState(0);
@@ -465,7 +462,7 @@ const QuestionarioManager = (props) => {
 
   return (<>
         <Col xs={3} bg="light" className="below-nav" id="left-sidebar" key={"filtri"}>
-          {(mode === 'view' || mode==="compilaUtente") && <Filters items={questionari} filtraQuestionario={filtraQuestionario} setShowCompila={setShowCompila} loggedIn={loggedIn} setRicaricaUtenti={setRicaricaUtenti}/>}
+          {(mode === 'view' || mode==="compilaUtente") && <Filters items={questionari} filtraQuestionario={filtraQuestionario} setShowCompila={setShowCompila} loggedIn={loggedIn} />}
           {mode === 'compila' && <DomandeMenu items={opzioneDomande} aggiungiDomanda={aggiungiDomanda} />}
         </Col>      
       <Col xs={9} className="below-nav" id="main" key={"main"} >

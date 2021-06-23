@@ -119,7 +119,7 @@ const OptionData = (props) => {
                   if(r.tipo ===0)
                       return       <>
                       <Form className="flex-fill d-flex w-100" key={t.did*2} >
-                       <Form.Control size="lg" as="textarea" rows={2} placeholder="Large text"  readOnly={!!props.bloccaRisposte} value={r.opzioneaperta} />                                                                                                                                              
+                       <Form.Control size="lg" as="textarea" rows={2} placeholder="Large text"  readOnly={!!props.bloccaRisposte} value={r.opzioneaperta?r.opzioneaperta:"Risposta NON data"} />                                                                                                                                              
                         </Form>
                         </>
                   else{
