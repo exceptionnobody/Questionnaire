@@ -329,6 +329,18 @@ console.log(obj)
   })
 
 
+
+  app.delete("/api/questionari/:qid", (req,res) => {
+
+    //const errors = validationResult(req);
+    //if (!errors.isEmpty())
+   //     return res.status(422).json({ errors: errors.array() })
+
+   dao.cancellaQuestionario(+req.params.qid).then(() => {res.status(200).end()})
+  .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
+    }
+);
+
 // activate the server
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);

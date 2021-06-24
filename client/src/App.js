@@ -34,7 +34,9 @@ function App() {
 
   const [utenti, setUtenti] = useState(null)
   const [idUtente, setIdUtente] = useState(null)
-  const [numeroUtentiTotali, setNumeroUtentiTotali] = useState(0)
+  const [primoCaricamento, setPrimoCaricamento] = useState(false)
+  const [ricaricaUtenti, setRicaricaUtenti] = useState(false)
+  const [ricaricaUtenti2, setRicaricaUtenti2] = useState(false)
   const [utentiSelezionati, setUtentiSelezionati] = useState([])
   const [numeroUtentiSelezionati, setNumeroUtentiSelezionati] = useState(0)
   const [idTemporaneoDopoCompilazione, setIdTemporaneo] = useState(0)
@@ -114,9 +116,6 @@ const registraUser = (user) => {
 
       API.inserisciUnNuovoQuestionario(questionariovett[idQuestionari]).then(result => {
         questionariovett[idQuestionari].qid = result;
-        
-    // console.log("QID nuovo questionario: "+ questionariovett[idQuestionari].qid)
-    // console.log(questionariovett[idQuestionari])
         setQuestionari(questionariovett) 
         setMode('compila')
       }      
@@ -124,24 +123,76 @@ const registraUser = (user) => {
       
   }
  
+  const cancellaQuestionario = () => {
+    const tempquest= [...questionari]
+    const questionarioDaEliminare = tempquest.pop()
+    setIdQuestionari(t => t-1)
+    API.cancellaNuovoQuestionario(questionarioDaEliminare.qid).then(()=>{
+
+      setQuestionari([...tempquest])
+      setMode('view')  
+    
+    })
+
+  }
+
+
   const doLogin = async (credentials) => {
-   
+    let risposta;
 
     try {
 
       const adminServer = await API.logIn(credentials);
 
       console.log("Login effettuato corretamente");
-
+      
       setAdmin(adminServer)
-      console.log(adminServer)
       setLoggedIn(true);
       setUtilizzatore(null)
       setVisualizzaDomande([])
       setQuestionarioselezionato({})
       setIdUtente(null)
+      setQuestionari(questionari.filter(q=> q.admin === adminServer.id))
+      setIdQuestionari(questionari.filter(q=> q.admin === adminServer.id).length?questionari.filter(q=> q.admin === adminServer.id).length:0);
+      let arr = []
+      for(const e of questionari.filter(q=> q.admin === adminServer.id)){
+        for(const v of domande){
+          if(v.questionario === e.qid)
+            arr.push(v)
+        }
+      }
+      setDomande([...arr])
+      setContaDomande(arr.length)
       setWelcomeAdmin({msg: `Welcome ${adminServer.name}`, color: adminServer.color});
-      //setLoading(true);
+      const utentiServer = await API.ottieniUtentiMieiQuestionari(adminServer.id)
+
+      //recupero tutti gli utenti che hanno risposto ai questionari dell'admin corrente
+
+      // per ogni utente recupero le sue risposte al questionario
+      let vett=[]
+      let stringaopzione;
+      for(const u of utentiServer){
+
+        risposta = await API.ottieniRisposteiMieiQuestionari(u.questionario, u.id)
+
+        for(const p of risposta){
+          for(const d of domande){
+              if(p.domanda === d.did && p.tipo ===1){
+                for(let i=0; i < d.numopzioni; i++){
+                  stringaopzione = `opzione${i+1}`
+                  vett.push({valorerisposta: p[stringaopzione]?1:0, indice: i+1, domanda: d[stringaopzione]})
+              }
+              p.opzioni = [...vett]
+              vett=[]
+            }
+          }
+
+        }
+      u.risposte = [...risposta]
+       } 
+      setUtenti([...utentiServer]);
+
+
       <Redirect to="/"/>
 
       // il valore di loggedIn non cambia
@@ -175,12 +226,10 @@ const registraUser = (user) => {
          else
              API.inserisciUnNuovaDomandaChiusa(vv).then(did=> {vv.did=did;})
         }
-        console.log(tempQuestionario)
         setContaDomande(s => s+domandeQuestionarioProv.length)  
         setMode('view')
         setLoading(true)
         setIdQuestionari(s => s+1)
-
     })
     
 
@@ -195,13 +244,15 @@ const registraUser = (user) => {
 
 
       
-    setUtentiSelezionati(loggedIn?[...utenti.filter(d => d.questionario === questionari[id].qid)]:[])
+    setUtentiSelezionati((loggedIn&&utenti)?[...utenti.filter(d => d.questionario === questionari[id].qid)]:[])
 
-    setNumeroUtentiSelezionati(loggedIn?[...utenti.filter(d => d.questionario === questionari[id].qid)].length:0)
+    setNumeroUtentiSelezionati((loggedIn&&utenti)?[...utenti.filter(d => d.questionario === questionari[id].qid)].length:0)
 
     setIdUtente(0) 
+    if(!loggedIn){
+      setIdTemporaneo(id)
+    }
 
-    setIdTemporaneo(id)
   }
 
   const incrementeIdUtente = () => {
@@ -234,26 +285,30 @@ const registraUser = (user) => {
 
   useEffect(() => {
 
-    async function caricaQuestionari(madmin) {
+    async function caricaQuestionari(aid) {
 
-      const result = await API.ottieniMieiQuestionari(madmin.id)
+      const result = await API.ottieniMieiQuestionari(aid)
       
+      
+      setQuestionari(result);
+      setIdQuestionari(result.length?result.length-1:0);
+      setLoading(true) 
+
       return result
            
     }
 
-      caricaQuestionari(admin).then((result) => { 
+    if(admin.id===null){
+      caricaQuestionari(admin.id).then((result) => { 
         
-       console.log(result) 
-       setQuestionari(result);
-       setIdQuestionari(result.length?result.length-1:0);
-       setLoading(true) 
+       console.log(result)
        setMode('view') 
+       console.log("QUI")
       })
+    }
 
 
-
-  }, [admin])
+  }, [admin.id])
 
  
   useEffect(() => {
@@ -262,6 +317,9 @@ const registraUser = (user) => {
 
       const result = await API.ottieniDomande(tadmin.id)
       
+
+      setLoading(false)
+
       return result
     }
       
@@ -282,14 +340,78 @@ const registraUser = (user) => {
 
         setDomande(result); 
         setContaDomande(result.length)
-        setLoading(false)
-        setUtilizzatore(null)
+
         console.log("Domande")
         console.log(result)
       })
     }
 
   }, [loading,  admin])
+
+  useEffect(() => {
+
+    async function caricaUtilizzatori(aid) {
+
+      let risposta;
+      //recupero tutti gli utenti che hanno risposto ai questionari dell'admin corrente
+
+      // per ogni utente recupero le sue risposte al questionario
+      const copiautenti = [...utenti]
+      for(const u of copiautenti){
+
+        risposta = await API.ottieniRisposteiMieiQuestionari(u.questionario, u.id)
+        let arr=[]
+        let stringaopzione;
+        for(const p of risposta){
+          for(const d of domande){
+              if(p.domanda === d.did && p.tipo ===1){
+                for(let i=0; i < d.numopzioni; i++){
+                  stringaopzione = `opzione${i+1}`
+                  arr.push({valorerisposta: p[stringaopzione]?1:0, indice: i+1, domanda: d[stringaopzione]})
+              }
+              p.opzioni = [...arr]
+              arr=[]
+            }
+          }
+
+        }
+      u.risposte = [...risposta]
+       }
+       setPrimoCaricamento(false)     
+       setUtenti(copiautenti)          
+    }
+
+    if (primoCaricamento && utenti !== null) {
+
+      caricaUtilizzatori(admin.id).then(() => { 
+
+       console.log("TEST")
+      })
+
+    }
+
+  }, [utenti, admin.id, domande, primoCaricamento])
+
+  useEffect(() => {
+
+    async function caricaQuestionari(aid) {
+
+      const result = await API.ottieniMieiQuestionari(aid)
+      setRicaricaUtenti2(false)
+      setQuestionari(result);           
+    }
+
+    if(loggedIn && ricaricaUtenti2){
+      caricaQuestionari(admin.id).then(() => { 
+        
+       console.log("Ricarica Questionari") 
+       setRicaricaUtenti(true) 
+
+      })
+    }
+
+
+  }, [ricaricaUtenti2, admin.id, loggedIn, idTemporaneoDopoCompilazione])
 
   useEffect(() => {
 
@@ -321,27 +443,19 @@ const registraUser = (user) => {
       u.risposte = [...risposta]
        }
  
-      
- 
-      return utentierver
-           
+       setRicaricaUtenti(false)
+       setUtenti(utentierver)         
     }
 
-    if (loggedIn && utenti === null) {
+    if (loggedIn && ricaricaUtenti) {
 
-      caricaUtilizzatori(admin).then((result) => { 
-       setUtenti(result) 
-       setUtilizzatore(result)
-       setNumeroUtentiTotali(result.length)
-
-       console.log("TEST")
+      caricaUtilizzatori(admin).then(() => { 
+       console.log("TEST Ricarica Utenti")
       })
 
     }
-
-  }, [loggedIn, utenti, admin, domande])
-
-
+ 
+  }, [ricaricaUtenti, utenti, admin, domande, questionarioselezionato, questionari, loggedIn])
 
   return (
 
@@ -354,9 +468,9 @@ const registraUser = (user) => {
 
       <QuestionarioManager  bloccaRisposte={bloccaRisposte} loggedIn={loggedIn} utentiSelezionati={ utentiSelezionati} idUtente={idUtente} lunghezzautenti={numeroUtentiSelezionati}
       submitButton={submitButton} setRisposteGlobali={setRisposteGlobali} verificaRisposte={verificaRisposte} incrementeIdUtente={incrementeIdUtente} decrementaIdUtente={decrementaIdUtente}
-      contaDomande={contaDomande} myDomande={visualizzaDomande} setGlobalUser={setGlobalUser} message={message}
+      contaDomande={contaDomande} myDomande={visualizzaDomande} setGlobalUser={setGlobalUser} message={message} setRicaricaUtenti2={setRicaricaUtenti2}
       questionari={questionari} setQuestionari={setQuestionari}  setMode={setMode} aggiungiDomandeQuestionario={aggiungiDomandeQuestionario}
-      questionarioselezionato={questionarioselezionato} filtraQuestionario={filtraQuestionario} 
+      questionarioselezionato={questionarioselezionato} filtraQuestionario={filtraQuestionario} cancellaQuestionario={cancellaQuestionario}
       mode={mode} idQuestionari={idQuestionari} chiudiQuestionario={chiudiQuestionario} compilaQuestionario={compilaQuestionario} >
 
 
@@ -383,8 +497,8 @@ const registraUser = (user) => {
 
 const QuestionarioManager = (props) => {
 
-  const {mode, contaDomande, filtraQuestionario, myDomande, idQuestionari, chiudiQuestionario, compilaQuestionario, questionari,  aggiungiDomandeQuestionario, questionarioselezionato } = props;
-  const {setGlobalUser, submitButton, setRisposteGlobali, verificaRisposte, message, loggedIn, utentiSelezionati, lunghezzautenti, idUtente, incrementeIdUtente, decrementaIdUtente } = props
+  const {mode, contaDomande, filtraQuestionario, myDomande, idQuestionari, chiudiQuestionario, compilaQuestionario, questionari,  aggiungiDomandeQuestionario, questionarioselezionato, cancellaQuestionario } = props;
+  const {setGlobalUser, submitButton, setRisposteGlobali, verificaRisposte, message, loggedIn, utentiSelezionati, lunghezzautenti, idUtente, incrementeIdUtente, decrementaIdUtente, setRicaricaUtenti2 } = props
   const [ domande, setDomande] = useState([])
   const [ showDomanda, setShowDomanda] = useState()
   const [did, setDid] = useState(0);
@@ -422,7 +536,8 @@ const QuestionarioManager = (props) => {
   const opzioneDomande = {
     'D1': { label: 'Aggiungi Domanda Chiusa', id: 'd1', fnc: ()=>{setShowDomanda(true); setModo("chiusa")}},
     'D2': { label: 'Aggiungi Domanda Aperta', id: 'd2', fnc: ()=>{setShowDomanda(true); setModo("aperta")}},
-    'D3': { label: "Pubblica Questionario", id: 'd3', fnc: pubblicaQuestionario}
+    'D3': { label: "Pubblica Questionario", id: 'd3', fnc: pubblicaQuestionario},
+    'D4': { label: "Cancella Questionario", id:"d4", fnc: ()=>cancellaQuestionario()}
   };
 
 
@@ -462,8 +577,8 @@ const QuestionarioManager = (props) => {
 
   return (<>
         <Col xs={3} bg="light" className="below-nav" id="left-sidebar" key={"filtri"}>
-          {(mode === 'view' || mode==="compilaUtente") && <Filters items={questionari} filtraQuestionario={filtraQuestionario} setShowCompila={setShowCompila} loggedIn={loggedIn} />}
-          {mode === 'compila' && <DomandeMenu items={opzioneDomande} aggiungiDomanda={aggiungiDomanda} />}
+          {(mode === 'view' || mode==="compilaUtente") && <Filters items={questionari} filtraQuestionario={filtraQuestionario} setShowCompila={setShowCompila} loggedIn={loggedIn} setRicaricaUtenti2={setRicaricaUtenti2} />}
+          {mode === 'compila' && <DomandeMenu items={opzioneDomande} aggiungiDomanda={aggiungiDomanda}  />}
         </Col>      
       <Col xs={9} className="below-nav" id="main" key={"main"} >
         {mode ==="compilaUtente" && <><h2 className="pb-3">{questionarioselezionato.titolo} <small className="text-muted"></small>

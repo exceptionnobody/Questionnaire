@@ -97,12 +97,15 @@ exports.getAllQuestionnaires = () => {
       if (rows == undefined) {
         resolve({ error: 'Task not found.' });
       } else {
-        const questionari = rows.map(t => ({
+        const questionari = rows.map(t => {
+          return {
           qid: t.qid,
           titolo: t.titolo,
+          admin: t.admin,
           numdomande: t.numdomande,
           numutenti: t.numutenti
-        }))
+        }
+      })
         resolve(questionari);
       }
     });
@@ -267,4 +270,16 @@ exports.ottieniUtentiDatoAdmin = (admin) => {
       }
     });
   })
+}
+
+exports.cancellaQuestionario = function(id) {
+  return new Promise((resolve, reject) => {
+      const sql = 'DELETE FROM questionari WHERE qid = ?';
+      db.run(sql, [id], function(err){
+          if(err)
+              reject(err);
+          else 
+              resolve("Task removed successfully");
+      })
+  });
 }
