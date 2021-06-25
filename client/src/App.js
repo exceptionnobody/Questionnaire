@@ -17,6 +17,7 @@ import DomandaChiusa from './components/DomandaChiusa';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 
 function App() {
+  const [ricaricaQuestionari, setRicaricaQuestionari] = useState(true)
   const [welcomeAdmin, setWelcomeAdmin] = useState({})
   const [mode, setMode]=useState('precarica')
   const [idQuestionari, setIdQuestionari] = useState(0)
@@ -49,21 +50,29 @@ function App() {
   }
 
 const verificaRisposte = async (funzione)=>{
-  const contaObbligatorie = visualizzaDomande.filter(t => t.obbligatoria===1)
-  const numobbligatorie = contaObbligatorie.length
-  const risposteattese = visualizzaDomande.filter(q => q.obbligatoria===1).map(t=> t.min).reduce((sum, value) => sum+value,0)
-  let numeroRisposteTotali=0;
-  const array = new Array(numobbligatorie).fill(0);
-  console.log(contaObbligatorie)
-  for(let i=0; i<numobbligatorie; i++){
+  
+  const numDomandeTotali = visualizzaDomande.length
+  const array = new Array(numDomandeTotali).fill(0);
+
+  for(const [i,v] of visualizzaDomande.entries()){
   for(const k of risposteGlobali){
-    if(k.domanda === contaObbligatorie[i].did && k.numrisposte >= contaObbligatorie[i].min && k.numrisposte <= contaObbligatorie[i].max){
-      numeroRisposteTotali += k.numrisposte;
+    if(v.did === k.domanda && k.numrisposte >= v.min && k.numrisposte <= v.max){
+    
       array[i]=1;
-    }
+      console.log(array)
+      
     }
   }
-  if(numeroRisposteTotali >= risposteattese){
+}  
+
+
+let conteggiorisposte=0;
+  for(const [i] of visualizzaDomande.entries()){
+    if(array[i] ===1)
+      conteggiorisposte++;
+  }
+  console.log("CONTEGGIO RISPOSTE: "+conteggiorisposte)
+  if(conteggiorisposte === numDomandeTotali){
     console.log("posso inviare il questionario")
     for(const v of risposteGlobali){
       const temp = Object.assign({},v)
@@ -82,7 +91,7 @@ const verificaRisposte = async (funzione)=>{
   }else{
     console.log("Questionario non valido")
     let errore = []
-    for(let i =0; i< numobbligatorie; i++){
+    for(let i =0; i< numDomandeTotali; i++){
       if(array[i]===0){
         errore.push({msg: "Rispetta i vincoli della domanda: ", domanda: visualizzaDomande[i].quesito})
       }
@@ -251,9 +260,10 @@ const registraUser = (user) => {
     setIdUtente(0) 
     if(!loggedIn){
       setIdTemporaneo(id)
+      setRicaricaQuestionari(true)
     }
 
-  }
+  } 
 
   const incrementeIdUtente = () => {
     setIdUtente(i=> i+1)
@@ -262,9 +272,9 @@ const registraUser = (user) => {
   const decrementaIdUtente = ()=>{
     setIdUtente(i=>i-1)
   }
+
+
   const doLogOut = async () => {
-
-
 
     await API.logOut();
 
@@ -281,6 +291,7 @@ const registraUser = (user) => {
     setWelcomeAdmin({msg: ""});
     setUtilizzatore(null)
     setUtenti(null)
+    setRicaricaQuestionari(true)
   }
 
   useEffect(() => {
@@ -293,12 +304,12 @@ const registraUser = (user) => {
       setQuestionari(result);
       setIdQuestionari(result.length?result.length-1:0);
       setLoading(true) 
-
+      setRicaricaQuestionari(false)
       return result
            
     }
 
-    if(admin.id===null){
+    if(admin.id===null && ricaricaQuestionari){
       caricaQuestionari(admin.id).then((result) => { 
         
        console.log(result)
@@ -308,7 +319,7 @@ const registraUser = (user) => {
     }
 
 
-  }, [admin.id])
+  }, [admin.id, ricaricaQuestionari])
 
  
   useEffect(() => {

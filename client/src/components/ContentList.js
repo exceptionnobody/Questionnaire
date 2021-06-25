@@ -62,7 +62,7 @@ const OptionData = (props) => {
     const gestisciRisposte= (value, id, domanda)=>{
       const temp = [...risposte];
 
-      if(domanda.tipo === 0 && value.length <=20){
+      if(domanda.tipo === 0 && value.length <=30){
         console.log("ID domanda aperta: "+ id)
         for(const z of temp){
           if(z.domanda === id){
@@ -70,6 +70,7 @@ const OptionData = (props) => {
             z.opzioneaperta = value
             }
           }
+          
       }  else{
         console.log("ID domanda chiusa: "+domanda.did)
         console.log(`Opzione domanda chiusa: ${id+1}`)
@@ -80,6 +81,7 @@ const OptionData = (props) => {
             v[rispostaData] = 1;
             v.numrisposte++;                      
           }
+          console.log(v)
           if(v.domanda === domanda.did && !value){
             rispostaData = `opzione${id+1}`
             v[rispostaData] = 0;
