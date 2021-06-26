@@ -8,7 +8,7 @@ const OptionData = (props) => {
 
   return (<div className="flex-fill m-auto" key={optionsList.did}>
     <span><small>{optionsList.tipo ? "Domanda Chiusa" : "Domanda Aperta"} {optionsList.obbligatoria === 1 && <Badge variant="danger">Obbligatoria</Badge>}</small>
-      {optionsList.tipo === 1 ? <span>   Min: {optionsList.min} - Max: {optionsList.max}</span> : null}
+      {optionsList.tipo === 1 ? <span>   Min: {optionsList.min} - Max: {optionsList.max}</span> : <small><Badge variant="warning">Max 200 caratteri</Badge></small>}
     </span>
     <h4> {optionsList.quesito} </h4>
 
@@ -126,12 +126,12 @@ const ContentList = (props) => {
 
                 if (r.tipo === 0)
                   return <>
-                    <Form className="flex-fill d-flex w-100" key={t.did * 2} >
+                    <Form className="flex-fill d-flex w-100" key={t.did} >
                       <Form.Control size="lg" as="textarea" rows={2} placeholder="Large text" readOnly value={r.opzioneaperta ? r.opzioneaperta : "AVVISO: Risposta NON data"} />
                     </Form>
                   </>
                 else {
-                  return <>{r.opzioni.map((o, j) => <Form.Check type="checkbox" key={j + 1} label={o.domanda} checked={o.valorerisposta ? true : false} disabled></Form.Check>)}</>
+                  return <>{r.opzioni.map((o, j) => <Form.Check type="checkbox" key={+t.did+j} label={o.domanda} checked={o.valorerisposta ? true : false} disabled></Form.Check>)}</>
 
                 }
 
@@ -140,10 +140,10 @@ const ContentList = (props) => {
               })}
 
               {/* VISUALIZZO LE DOMANDE SE UN QUESTIONARIO NON HA DEGLI UTENTI */}
-              {mode === 'view' && lunghezzautenti === 0 && loggedIn && tipodomanda && <StampaOpzioni optionsList={t} opzioni={t.opzioni} numopzioni={t.numopzioni} gestisciRisposte={null} bloccaRisposte={props.bloccaRisposte}></StampaOpzioni>}
-              {mode === 'view' && lunghezzautenti === 0 && loggedIn && !tipodomanda && <>
+              {loggedIn && mode === 'view' && !lunghezzautenti   && tipodomanda && <StampaOpzioni optionsList={t} opzioni={t.opzioni} numopzioni={t.numopzioni} gestisciRisposte={null} bloccaRisposte={props.bloccaRisposte}></StampaOpzioni>}
+              {loggedIn && mode === 'view' && !lunghezzautenti &&  !tipodomanda && <>
                 <Form className="flex-fill d-flex w-100" key={t.did} >
-                  <Form.Control size="lg" as="textarea" rows={2} placeholder="Large text" readOnly />
+                  <Form.Control size="lg" as="textarea" rows={2} placeholder="" readOnly />
                 </Form>
               </>}
             </div>);

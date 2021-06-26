@@ -1,4 +1,4 @@
-import {ListGroup} from 'react-bootstrap/';
+import {ListGroup, Badge} from 'react-bootstrap/';
 
 /* get the list of labels to show, the one that is selected and the handler to notify a new selection */
 const Filters = (props) => {
@@ -21,7 +21,7 @@ const Filters = (props) => {
                 
                 setShowCompila(true);
                 }
-                }} action>{t.titolo}&nbsp;&nbsp;&nbsp;{loggedIn&& <span>{t.numutenti}</span>}</ListGroup.Item>
+                }} action>{t.titolo}&nbsp;&nbsp;&nbsp;{loggedIn && <Badge variant="dark" pill >{t.numutenti}</Badge>}</ListGroup.Item>
             );
           })
         }

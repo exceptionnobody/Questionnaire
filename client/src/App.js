@@ -247,8 +247,7 @@ function App() {
   const filtraQuestionario = (id) => {
 
     setQuestionarioselezionato(questionari[id])
-    //console.log("QID Questionario selezionato "+questionari[id].qid)
-    //console.log("ID QUESTIONARIO NELL'ARRAY: "+id)
+
     setVisualizzaDomande(domande.filter(d => d.questionario === questionari[id].qid))
 
     setUtentiSelezionati((loggedIn && utenti) ? [...utenti.filter(d => d.questionario === questionari[id].qid)] : [])
@@ -592,15 +591,16 @@ const QuestionarioManager = (props) => {
   }
 
   return (<>
+  {/* BARRA LATERALE FILTRI E MENU PER ADMIN*/}
     <Col xs={3} bg="light" className="below-nav" id="left-sidebar" key={"filtri"}>
 
       {(mode === 'view' || mode === "compilaUtente") && <Filters items={questionari} filtraQuestionario={filtraQuestionario} setShowCompila={setShowCompila} loggedIn={loggedIn} setRicaricaUtenti2={setRicaricaUtenti2} />}
    
-      {mode === 'compila' && <DomandeMenu items={opzioneDomande} aggiungiDomanda={aggiungiDomanda} />}
+      {mode === 'compila' && loggedIn && <DomandeMenu items={opzioneDomande} aggiungiDomanda={aggiungiDomanda} />}
    
     </Col>
    
-   
+   {/* MAIN */}
     <Col xs={9} className="below-nav" id="main" key={"main"} >
 
 
@@ -634,14 +634,14 @@ const QuestionarioManager = (props) => {
         </Row>
       </>}
 
-
+    {/* VISUALIZZAZIONE ADMIN DEI QUESTIONARI CON LE RISPOSTE DEGLI UTENTI */}
       {loggedIn && mode === 'view' && <>
         <h2 className="pb-3">{questionarioselezionato.titolo}  <small className="text-muted">{(idUtente !== null && lunghezzautenti >= 1) ? utentiSelezionati[idUtente].nome : null}
           {idUtente !== null && lunghezzautenti > 1 && idUtente !== 0 && <Button variant="primary" size="sm" onClick={() => decrementaIdUtente()}>  <ArrowLeft></ArrowLeft>
           </Button>}
           {idUtente !== null && lunghezzautenti > 1 && idUtente !== (lunghezzautenti - 1) && <Button variant="primary" size="sm" onClick={() => incrementeIdUtente()}>  <ArrowRight></ArrowRight>
           </Button>}
-
+          
         </small>
         </h2>
 

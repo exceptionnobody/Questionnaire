@@ -20,6 +20,7 @@ const Navigation = (props) => {
       <Navbar.Brand href="/">
         <CheckAll className="mr-1" size="30" /> ToDo Manager
       </Navbar.Brand>
+      
       {globalUser && <Form inline className="my-0 mx-auto" onSubmit={handler}>
         <h6>Inserisci il nome:&#160;&#160;</h6>
         <Form.Control className="mr-2" type="text" placeholder="" onChange={(event)=>setUser(event.target.value)} />
