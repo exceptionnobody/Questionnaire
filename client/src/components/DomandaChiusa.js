@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import {Accordion, Card, Form, Button, Col, Row} from 'react-bootstrap'
+import {Card, Form, Button, Col, Row, Alert} from 'react-bootstrap'
 
 const DomandaChiusa = (props)=>{
     const {Qid} = props
@@ -8,13 +8,20 @@ const DomandaChiusa = (props)=>{
     const [numOpzioni, setNumOpzioni] = useState(0); 
     const [quesito, setQuesito] = useState('')
     const [opzioni, setOpzioni] = useState([]);
-
+    const [errore, setErrore] = useState({message:null})
+    const [show, setShow] = useState(false);
     const sottometti=(event)=>{
         event.preventDefault();
         let opzionei
         let domanda = {};
         if(min > max || max > numOpzioni){
             //setto un errore e dovrà essere corretto
+            setShow(true)
+            if(min > max){
+              setErrore({messsage: "Minimo > Massimo"})
+            }else{
+              setErrore({messsage: "Massimo > Numero Opzioni"})
+            }
         }else{
           if (min === max || min >= 1){
             domanda.obbligatoria = 1
@@ -37,22 +44,21 @@ const DomandaChiusa = (props)=>{
 
     const registraOpzione = (value, ind) =>{
       setOpzioni(oldstate => {
-          const list = oldstate.map((item)=>{
+         return [...oldstate.map((item)=>{
             if(item.indice === ind){
               return { opzione: value, indice: ind}
             }else{
               return item
             }
-          })
-          return list
+          })]
         })
     }
 
     const settoIlNumeroOpzioni = (ev)=>{
       let vett = []
-      const numOpzioni = parseInt(ev.target.value);
+      const numOpzionitemp = parseInt(ev.target.value);
 
-      setNumOpzioni(numOpzioni)
+      setNumOpzioni(numOpzionitemp)
   
       for(let i=0; i<ev.target.value; i++){
         vett.push({opzione: "", indice:i})
@@ -61,13 +67,14 @@ const DomandaChiusa = (props)=>{
 
     }
 
-return <Accordion defaultActiveKey="0">
-  <Card>
-    <Accordion.Toggle as={Card.Header} eventKey="0">
-    <span>Domanda Chiusa</span>
-    </Accordion.Toggle>
+return   <Card>
+     {show && <Alert variant="danger" onClose={() => setShow(false)} dismissible>
+     <Alert.Heading>Errore nei vincoli della domanda:</Alert.Heading>
+        {errore.messsage}
 
-    <Accordion.Collapse eventKey="0">
+      </Alert>}
+      <Card.Header as="h5"><span>Domanda Chiusa</span></Card.Header>
+ 
       <Card.Body>
           <Form onSubmit={sottometti}>
   <Form.Row>
@@ -79,8 +86,8 @@ return <Accordion defaultActiveKey="0">
       <Form.Label>Numero di Opzioni</Form.Label>
       <Form.Control as="select" onChange={(ev)=>{settoIlNumeroOpzioni(ev)}  
     } required>
-        <option >{' '}</option>
-        <option >1</option>
+        <option>{' '}</option>
+        <option>1</option>
         <option>2</option>
         <option>3</option>
         <option>4</option>
@@ -97,7 +104,7 @@ return <Accordion defaultActiveKey="0">
       <Form.Control as="select" onChange={(ev)=>setMin(+ev.target.value)} required>
         <option>{' '}</option>
         <option>0</option>
-        <option >1</option>
+        <option>1</option>
         <option>2</option>
         <option>3</option>
         <option>4</option>
@@ -132,11 +139,12 @@ return <Accordion defaultActiveKey="0">
     <Col xs="auto">
     <Form.Group>
       <Form.Label htmlFor="inlineFormInput" visuallyhidden="true">
-        Quesito {`${i}`}
+        Quesito {`${i+1}`}
       </Form.Label>
       <Form.Control type="text" name="description"
         className="mb-2"
         id={i}
+        required
         placeholder="Insert Option"
         onChange={(event)=>{registraOpzione(event.target.value, i)}}
       />
@@ -151,10 +159,10 @@ return <Accordion defaultActiveKey="0">
   <Button variant="primary" type="submit">
     Inserisci
   </Button>
-</Form></Card.Body>
-    </Accordion.Collapse>
+</Form>
+</Card.Body>
+
   </Card>
 
-</Accordion>
 }
 export default DomandaChiusa;

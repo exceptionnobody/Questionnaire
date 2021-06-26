@@ -2,7 +2,6 @@ const baseURL = "/api";
 
 async function inserisciUnNuovoQuestionario(questionario){
     let url = "/questionari";
-    console.log(questionario)
     return new Promise((resolve, reject) => {
     fetch(baseURL+url, {
         method: 'POST',
@@ -26,7 +25,6 @@ async function inserisciUnNuovoQuestionario(questionario){
 
 async function cancellaNuovoQuestionario(questionario){
   let url = "/questionari/";
-  console.log(questionario)
   return new Promise((resolve, reject) => {
   fetch(baseURL+url+questionario, {
       method: 'DELETE'

@@ -5,33 +5,29 @@ const FormPersonale = (props) => {
 
     const [titolo, setTitolo] = useState('')
 
-    const chiudiForm = (event)=>{
-        
-        props.chiudiQuestionario();
-    }
-
     const sottometti = (event) => {
         event.preventDefault();
         event.stopPropagation();
         props.compilaQuestionario(titolo) 
     }
 
-return <Form onSubmit={sottometti}>
-  <Form.Row>
-    <h3>Crea Questionario</h3>
-  </Form.Row>
+return <>
+          <h3>Crea Questionario</h3>
+<Form onSubmit={sottometti}>
 
-  <Form.Group as={Col} controlId="formGridCity">
-      <Form.Label>Titolo</Form.Label>
-      <Form.Control onChange={(ev)=> setTitolo(ev.target.value)} required/>
-    </Form.Group>
-
-  <Button variant="primary" type="submit">
+  <Form.Row className="align-items-center">
+  <Col xs={6} className="my-1">
+      <Form.Label htmlFor="inlineFormInputName" srOnly>Titolo</Form.Label>
+      <Form.Control onChange={(ev)=> setTitolo(ev.target.value)} required placeholder="Titolo"/>
+  </Col>
+  <Col  sm={3} className="my-1">
+  <Button variant="success" className="ml-1"  type="submit">
     Submit
-  </Button>
-  <Button variant="secondary" onClick={(event)=>chiudiForm(event)}>
-    Close
-  </Button>
+  </Button>  
+  </Col>
+
+</Form.Row>
 </Form>
+</>
 }
 export default FormPersonale;

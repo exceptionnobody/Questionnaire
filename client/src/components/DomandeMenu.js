@@ -9,7 +9,7 @@ const DomandeMenu = (props) => {
         {
           Object.entries(items).map(([key, { label, fnc }]) => {
             return (
-              <ListGroup.Item as="a" key={key} onClick={fnc} action>{label}</ListGroup.Item>
+              <ListGroup.Item  variant="warning" className="text-dark" as="a" key={key} onClick={fnc} action>{label}</ListGroup.Item>
             );
           })
         }
