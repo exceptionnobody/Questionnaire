@@ -280,9 +280,10 @@ function App() {
     setIdQuestionari(0)
     setVisualizzaDomande([])
     setQuestionarioselezionato([])
-    setWelcomeAdmin({ msg: "" });
+    setWelcomeAdmin({msg: "" });
     setUtilizzatore(null)
     setUtenti(null)
+    setMode('view')
     setRicaricaQuestionari(true)
   }
 

@@ -123,7 +123,7 @@ exports.createQuestionario = (quest) => {
         reject(err);
       }
       resolve(this.lastID);
-      console.log(`A row has been inserted with rowid ${this.lastID}`);
+      //console.log(`A row has been inserted with rowid ${this.lastID}`);
     });
   });
 };
@@ -178,7 +178,7 @@ exports.inserisciUser = (user) => {
         reject(err);
       }
       resolve(this.lastID);
-      console.log(`A row has been inserted with rowid ${this.lastID}`);
+      //console.log(`A row has been inserted with rowid ${this.lastID}`);
     });
   });
 };
@@ -191,7 +191,7 @@ exports.inseriscRisposte = (risposta) => {
         reject(err);
       }
       resolve(this.lastID);
-      console.log(`A row has been inserted with rowid ${this.lastID}`);
+     // console.log(`A row has been inserted with rowid ${this.lastID}`);
     });
   });
 };
@@ -204,7 +204,7 @@ exports.aggiornaNumUtenti = (qid) => {
         reject(err);
       }
       resolve(this.changes);
-      console.log(`Row(s) updated: ${this.changes}`);
+    //  console.log(`Row(s) updated: ${this.changes}`);
     });
   });
 
@@ -219,7 +219,7 @@ exports.aggiornaNumDomande = (questionario) => {
         reject(err);
       }
       resolve(this.changes);
-      console.log(`Row(s) updated: ${this.changes}`);
+    //  console.log(`Row(s) updated: ${this.changes}`);
     });
   });
 

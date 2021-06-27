@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const {validationResult, check} = require('express-validator'); // validation middleware
 const dao = require('./dao');
 const morgan = require('morgan');
 const passport = require('passport'); // auth middleware
@@ -88,8 +89,18 @@ app.post('/api/sessions', function(req, res, next) {
   })(req, res, next);
 });
 
+app.delete('/api/sessions/current', (req, res) => {
+  req.logout();
+  res.end();
+});
+
+
 // Parametrica /api/questionari?admin=?
-app.get('/api/questionari', async (req, res) => {
+app.get('/api/questionari',[check('admin').exists({ checkNull: false })], async (req, res) => {
+
+  const errors = validationResult(req);
+    if (!errors.isEmpty())
+        return res.status(422).json({ errors: errors.array() })
 
   try {
     
@@ -114,8 +125,11 @@ app.get('/api/questionari', async (req, res) => {
 })
 
 // Query parametrica /api/domande?admin=valore
-app.get('/api/domande', async (req, res) => {
+app.get('/api/domande',[check('admin').exists({ checkNull: false })] ,async (req, res) => {
 
+  const errors = validationResult(req);
+    if (!errors.isEmpty())
+        return res.status(422).json({ errors: errors.array() })
 
   try {
     let result;
@@ -137,7 +151,11 @@ app.get('/api/domande', async (req, res) => {
   }
 });
 
-app.get('/api/answer/:id', async (req, res) => {
+app.get('/api/answer/:id',[check('id').isInt({ min: 1 })], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty())
+      return res.status(422).json({ errors: errors.array() })
+
   try {
       const result = await dao.getOptions(req.params.id);
       if (result.error)
@@ -149,7 +167,7 @@ app.get('/api/answer/:id', async (req, res) => {
   }
 });
 
-app.post('/api/questionari', async (req, res) => {
+app.post('/api/questionari',[check('qid').isInt({ min: 1 }), check(), check('titolo').isString(), check('numdomande').isInt({ min: 0 }), check('admin').isInt({ min: 1 })] ,isLoggedIn,async (req, res) => {
  
   const questionario = {
     qid: req.body.qid,
@@ -157,29 +175,21 @@ app.post('/api/questionari', async (req, res) => {
     titolo: req.body.titolo,
     numdomande: req.body.numdomande
   };
-
- // console.log(domande)
- console.log(questionario)
  
- dao.createQuestionario(questionario).then((qid)=>{
-   console.log("inserimento andato a buon fine "+ qid)
-   res.status(201).json(qid).end()
- }).catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
+ dao.createQuestionario(questionario).then((qid)=>{res.status(201).json(qid).end()})
+                                    .catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
 
  })
 
 
- app.put('/api/questionari', async (req, res) => {
+ app.put('/api/questionari', isLoggedIn,async (req, res) => {
  
   const questionario = {
     qid: req.body.qid
   };
 
- console.log(questionario)
- dao.aggiornaNumUtenti(questionario).then((result)=>{
-   console.log("Aggiornamento andato a buon fine "+ result)
-   res.status(201).json(result).end()
- }).catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
+ dao.aggiornaNumUtenti(questionario).then((result)=>{res.status(201).json(result).end()})
+                                    .catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
 
  })
 
@@ -190,11 +200,8 @@ app.post('/api/questionari', async (req, res) => {
     numdomande: req.body.numdomande
   };
 
- console.log(questionario)
- dao.aggiornaNumDomande(questionario).then((result)=>{
-   console.log("Aggiornamento andato a buon fine "+ result)
-   res.status(201).json(result).end()
- }).catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
+ dao.aggiornaNumDomande(questionario).then((result)=>{res.status(201).json(result).end()})
+                                    .catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
 
  })
 
@@ -213,12 +220,9 @@ app.post('/api/questionari', async (req, res) => {
   obbligatoria: req.body.obbligatoria
   
 }
-console.log(domanda)
 
- dao.inserisciDomandeAperta(domanda).then((did)=>{
-
-    res.status(201).json(did).end();
- }).catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
+ dao.inserisciDomandeAperta(domanda).then((did)=>{res.status(201).json(did).end()})
+                                    .catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
 
  })
 
@@ -237,12 +241,9 @@ console.log(domanda)
    ...req.body
    
  }
- console.log(domanda)
  
-  dao.inserisciDomandeChiusa(domanda).then((did)=>{
-    console.log("inserimento andato a buon fine "+ did)
-    res.status(201).json(did).end();
-  }).catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
+  dao.inserisciDomandeChiusa(domanda).then((did)=>{res.status(201).json(did).end()})
+                                     .catch((err)=>{  res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]}) })
  
   })
  
@@ -261,9 +262,9 @@ const utente = {
   nome: req.body.nome,
   questionario: req.body.questionario
 }
-console.log(utente)
-  dao.inserisciUser(utente).then((id)=>{res.status(200).json(id).end()})
-              .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
+
+dao.inserisciUser(utente).then((id)=>{res.status(200).json(id).end()})
+                          .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
 })
 
 app.post("/api/risposte", async (req, res) => {
@@ -290,31 +291,34 @@ app.post("/api/risposte", async (req, res) => {
  
 
 }
-console.log(risposta)
-    dao.inseriscRisposte(risposta).then((id)=>{res.status(200).json(id).end()})
-                .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
+dao.inseriscRisposte(risposta).then((id)=>{res.status(200).json(id).end()})
+                              .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
   })
 
 // Dato un questionario mi dà tutte le risposte di un dato user
 // Parametrica: questionario=valore&user=valore;
-  app.get("/api/risposte", async (req, res) => {
+  app.get("/api/risposte", [check('questionario').isInt({ min: 1 }), [check('utente').isInt({ min: 1 })] ] , isLoggedIn, async (req, res) => {
 
-    let obj;
-   
-    
-    obj = {
+    const errors = validationResult(req);
+  if (!errors.isEmpty())
+      return res.status(422).json({ errors: errors.array() })
+
+  let obj = {
       questionario: +req.query.questionario,
       utente: +req.query.utente
-       
-  }
-  console.log(obj)
+   }
+  
       dao.ottieniRisposteDaUtente(obj).then((risultato)=>{res.status(200).json(risultato).end()})
                   .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
     })
 
 // Mi serve trovare tutti gli utenti che hanno risposto ai questionari di un dato admin
 // Parametrica: ?admin=valore
-app.get("/api/utenti", async (req, res) => {
+app.get("/api/utenti",[check('admin').isInt({ min: 1 })], isLoggedIn,async (req, res) => {
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty())
+      return res.status(422).json({ errors: errors.array() })
 
   let obj;
  
@@ -322,22 +326,22 @@ app.get("/api/utenti", async (req, res) => {
   obj = {
     admin: +req.query.admin,
      
-}
-console.log(obj)
-    dao.ottieniUtentiDatoAdmin(obj).then((risultato)=>{res.status(200).json(risultato).end()})
+  }
+  
+  dao.ottieniUtentiDatoAdmin(obj).then((risultato)=>{res.status(200).json(risultato).end()})
                 .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
   })
 
 
 
-  app.delete("/api/questionari/:qid", (req,res) => {
+app.delete("/api/questionari/:qid", [check('qid').isInt({ min: 1 })] ,(req,res) => {
 
-    //const errors = validationResult(req);
-    //if (!errors.isEmpty())
-   //     return res.status(422).json({ errors: errors.array() })
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+        return res.status(422).json({ errors: errors.array() })
 
-   dao.cancellaQuestionario(+req.params.qid).then(() => {res.status(200).end()})
-  .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
+  dao.cancellaQuestionario(req.params.qid).then(() => {res.status(200).end()})
+                                            .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
     }
 );
 

@@ -109,7 +109,7 @@ const QuestionarioManager = (props) => {
         <Col xs={9} className="below-nav" id="main" key={"main"} >
 
             {/* COMPILAZIONE DEL QUESTIONARIO DA PARTE DELL'UTILIZZATORE */}
-            {mode === "compilaUtente" && <>
+            {!loggedIn && mode === "compilaUtente" && <>
                 <h2 className="pb-3">{questionarioselezionato.titolo} <small className="text-muted"></small>
                 </h2>
                 {message.msg !== null && <Alert variant="danger" onClose={() => setMessage({ msg: null })} dismissible>
@@ -118,7 +118,7 @@ const QuestionarioManager = (props) => {
                         {t.msg} {t.domanda}
                     </Alert>)}
                 </Alert>}
-                <ContentList key={myDomande.length} questionList={myDomande} SpostaElementi={SpostaElementi} setRisposteGlobali={setRisposteGlobali} bloccaRisposte={!submitButton} />
+                <ContentList key={myDomande.length} questionList={myDomande} setRisposteGlobali={setRisposteGlobali} bloccaRisposte={!submitButton} />
                 <Row className="justify-content-md-center pt-3" id="tasti">
                     <Col md="auto">
                         {submitButton && <Button key={"invia"} variant="danger" onClick={() => verificaRisposte(setShowCompila)}>Invia </Button>}
@@ -129,11 +129,11 @@ const QuestionarioManager = (props) => {
 
             {/* VISUALIZZAZIONE DEI QUESTIONARI DA PARTE DELL'UTILIZZATORE */}
             {!loggedIn && mode === 'view' && <>
-                <h2 className="pb-3">{questionarioselezionato.titolo} <small className="text-muted"></small>
-                </h2>
+                <h2 className="pb-3" key={"questionario"}>{questionarioselezionato.titolo}  </h2>
 
-                <ContentList key={myDomande.length} questionList={myDomande} SpostaElementi={SpostaElementi} setRisposteGlobali={setRisposteGlobali} bloccaRisposte={!submitButton} mode={mode} />
-                <Row className="justify-content-md-center pt-3" id="tasti">
+                <ContentList key={questionarioselezionato.qid} questionList={myDomande}  bloccaRisposte={!submitButton} mode={mode} />
+               
+                <Row className="justify-content-md-center pt-3" id="tasti" key={"compilabutton"}>
                     <Col md="auto">
                         {showCompila && <Button key={"compila"} variant="success" onClick={() => { setGlobalUser(s => !s); setShowCompila(false); setBloccaFiltri(true) }}>Compila</Button>}
                     </Col>
@@ -151,20 +151,23 @@ const QuestionarioManager = (props) => {
                 </small>
                 </h2>
 
-                <ContentList key={myDomande.length*37}questionList={myDomande} SpostaElementi={SpostaElementi} setRisposteGlobali={setRisposteGlobali} bloccaRisposte={!submitButton} utentiSelezionati={utentiSelezionati} lunghezzautenti={lunghezzautenti} loggedIn={loggedIn} idUtente={idUtente} mode={mode} />
+                <ContentList key={"admin"} questionList={myDomande} setRisposteGlobali={setRisposteGlobali} bloccaRisposte={!submitButton} utentiSelezionati={utentiSelezionati} lunghezzautenti={lunghezzautenti} loggedIn={loggedIn} idUtente={idUtente} mode={mode} />
             </>}
 
 
             {/* CREA QUESTIONARIO */}
             {mode === "create" && <FormPersonale compilaQuestionario={compilaQuestionario} />}
 
+            
+            {/* VISUALIZZA IL QUESTIONARIO CREATO CON LE DOMANDE MA ANCORA NON PUBBLICATO */}
+            {mode === "compila" && <><h3 className="pb-3">Questionario: <span className="text-muted">{questionari[idQuestionari].titolo}</span></h3></>}
+            
             {/* APRE FORM PER DOMANDA APERTA O CHIUSA */}
             {modo === "aperta" && showDomanda && <DomandaAperta did={did} aggiungiDomanda={aggiungiDomanda} Qid={questionari[idQuestionari].qid} />}
             {modo === "chiusa" && showDomanda && <DomandaChiusa did={did} aggiungiDomanda={aggiungiDomanda} Qid={questionari[idQuestionari].qid} />}
 
 
-            {/* VISUALIZZA IL QUESTIONARIO CREATO CON LE DOMANDE MA ANCORA NON PUBBLICATO */}
-            {mode === "compila" && <><h3 className="pb-3">Questionario: <span className="text-muted">{questionari[idQuestionari].titolo}</span></h3></>}
+
             {modo === "temp" && !showDomanda && <>
 
                 {show && <Alert variant="danger" onClose={() => setShow(false)} dismissible>

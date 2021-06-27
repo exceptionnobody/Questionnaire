@@ -6,11 +6,11 @@ import { Trash, ArrowDown, ArrowUp } from 'react-bootstrap-icons';
 const OptionData = (props) => {
   const { optionsList } = props;
 
-  return (<div className="flex-fill m-auto" key={optionsList.did}>
-    <span><small>{optionsList.tipo ? "Domanda Chiusa" : "Domanda Aperta"} {optionsList.obbligatoria === 1 && <Badge variant="danger">Obbligatoria</Badge>}</small>
-      {optionsList.tipo === 1 ? <span>   Min: {optionsList.min} - Max: {optionsList.max}</span> : <small><Badge variant="warning">Max 200 caratteri</Badge></small>}
+  return (<div className="flex-fill m-auto" key={"titolo"}>
+    <span key={"tipo"}><small>{optionsList.tipo ? "Domanda Chiusa" : "Domanda Aperta"} {optionsList.obbligatoria === 1 && <Badge key={"obbligatoria"} variant="danger">Obbligatoria</Badge>}</small>
+      {optionsList.tipo === 1 ? <span>   Min: {optionsList.min} - Max: {optionsList.max}</span> : <small><Badge key={"max"} variant="warning">Max 200 caratteri</Badge></small>}
     </span>
-    <h4> {optionsList.quesito} </h4>
+    <h4 key={"quesito"}> {optionsList.quesito} </h4>
 
   </div>
   )
@@ -18,10 +18,10 @@ const OptionData = (props) => {
 
 const StampaOpzioni = (props) => {
   const { opzioni, optionsList, gestisciRisposte, bloccaRisposte, } = props;
-  return <Form key={`${optionsList.did}`} >
+  return <Form key={optionsList.quesito} >
     <div className="mb-3">
       {opzioni.map((t, i) => {
-        return <Form.Check key={i} type="checkbox" disabled={!!bloccaRisposte} onClick={(event) => gestisciRisposte(event.target.checked, i, optionsList)} label={t.opzione} />
+        return <Form.Check key={"opzione"+t.did+i} type="checkbox" disabled={!!bloccaRisposte} onClick={(event) => gestisciRisposte(event.target.checked, i, optionsList)} label={t.opzione} />
       })
       }
     </div>
@@ -49,7 +49,7 @@ const ContentList = (props) => {
 
   const { mode, questionList, SpostaElementi, CancellaDomanda, setRisposteGlobali, utentiSelezionati, loggedIn, lunghezzautenti, idUtente } = props;
 
-  const [risposte, setRisposte] = useState(questionList.lenght !== 0 ? questionList.map(d => {
+  const [risposte, setRisposte] = useState(questionList.length !== 0 ? questionList.map(d => {
     return {
       domanda: d.did,
       numrisposte: 0,
@@ -90,34 +90,34 @@ const ContentList = (props) => {
 
   return (
     <>
-      <ListGroup as="div" variant="flush" key={89*questionList.map(q=>q.questionario).lenght} >
-        {
-          questionList.map(t => {
+      <ListGroup as="div" variant="flush" key={"listgroup"} >
+        { questionList ?
+          questionList.map((t) => {
             const tipodomanda = (t.tipo === 1 && t.numopzioni >= 1) ? true : false;
 
-            return (<div key={t.did}>
+            return (<div key={"domanda"+t.did}>
               <ListGroup.Item as="li" key={t.quesito} className={`d-flex w-100  ${t.tipo ? "bg-warning" : "bg-info"}`}  >
-                <OptionData optionsList={t} />
-                {t.modificabile && <AnswerControls domanda={t} lunghezzadomande={questionList.length} SpostaElementi={SpostaElementi} CancellaDomanda={CancellaDomanda} />}
+                <OptionData optionsList={t} key={"options"}/>
+                {loggedIn && t.modificabile && <AnswerControls key={"controlbuttons"} domanda={t} lunghezzadomande={questionList.length} SpostaElementi={SpostaElementi} CancellaDomanda={CancellaDomanda} />}
               </ListGroup.Item>
 
               {/* VISUALIZZO LE DOMANDE CON LE OPZIONI IN FASE DI COMPILAZIONE */}
-              {mode === 'compila' && loggedIn && tipodomanda && <StampaOpzioni key={t.did} optionsList={t} opzioni={t.opzioni} numopzioni={t.numopzioni} gestisciRisposte={null} bloccaRisposte={props.bloccaRisposte}>    </StampaOpzioni>  }
+              {mode === 'compila' && loggedIn && tipodomanda && <StampaOpzioni key={t.did+79} optionsList={t} opzioni={t.opzioni} numopzioni={t.numopzioni} gestisciRisposte={null} bloccaRisposte={props.bloccaRisposte}>    </StampaOpzioni>  }
               {mode === 'compila' && loggedIn && !tipodomanda && <>
-                <Form className="flex-fill d-flex w-100" key={t.did} >
+                <Form className="flex-fill d-flex w-100" key={t.did+73} >
                   <Form.Control size="lg" as="textarea" rows={2} placeholder="" readOnly/>
                 </Form>
               </>}
 
-              {/* VISUALIZZO LE OPZIONI DI OGNI DOMANDA IN MODALITA' USER*/}
-              {!loggedIn && tipodomanda && <StampaOpzioni key={t.did} optionsList={t} opzioni={t.opzioni} numopzioni={t.numopzioni} gestisciRisposte={gestisciRisposte} bloccaRisposte={props.bloccaRisposte}> </StampaOpzioni>}
+              {/* VISUALIZZO LE OPZIONI DI OGNI DOMANDA IN MODALITA' UTILIZZATORE*/}
+              {!loggedIn && tipodomanda && <StampaOpzioni key={t.did*11} optionsList={t} opzioni={t.opzioni} numopzioni={t.numopzioni} gestisciRisposte={gestisciRisposte} bloccaRisposte={props.bloccaRisposte}> </StampaOpzioni>}
               {!loggedIn && !tipodomanda && <>
-                <Form className="flex-fill d-flex w-100" key={t.did} >
+                <Form className="flex-fill d-flex w-100" key={t.did*17} >
                   <Form.Control size="lg" as="textarea" rows={2} placeholder="Da Compilare..." readOnly={!!props.bloccaRisposte} onChange={(event) => gestisciRisposte(event.target.value, t.did, t)} />
                 </Form>
               </>}
 
-              {/* VISUALIZZO I RISULTATI SE UN QUESTIONARIO HA DEGLI UTENTI */}
+              {/* VISUALIZZO LE RISPOSTE SE UN QUESTIONARIO HA DEGLI UTENTI */}
               {mode === 'view' && loggedIn && lunghezzautenti >= 1 && utentiSelezionati[idUtente].risposte.filter(u => u.domanda === t.did).map((r) => {
 
                 if (r.tipo === 0)
@@ -127,24 +127,22 @@ const ContentList = (props) => {
                     </Form>
                   </>
                 else {
-                  return <>{r.opzioni.map((o, j) => <Form.Check type="checkbox" key={+t.did+j*17} label={o.domanda} checked={o.valorerisposta ? true : false} disabled></Form.Check>)}</>
+                  return <>{r.opzioni.map((o, j) => <Form.Check type="checkbox" key={t.did+29+j} label={o.domanda} checked={o.valorerisposta ? true : false} disabled></Form.Check>)}</>
 
                 }
-
-
 
               })}
 
               {/* VISUALIZZO LE DOMANDE SE UN QUESTIONARIO NON HA DEGLI UTENTI */}
-              {loggedIn && mode === 'view' && !lunghezzautenti && tipodomanda && <StampaOpzioni optionsList={t} opzioni={t.opzioni} numopzioni={t.numopzioni} gestisciRisposte={null} bloccaRisposte={props.bloccaRisposte}></StampaOpzioni>}
+              {loggedIn && mode === 'view' && !lunghezzautenti && tipodomanda && <StampaOpzioni key={t.did+17} optionsList={t} opzioni={t.opzioni} numopzioni={t.numopzioni} gestisciRisposte={null} bloccaRisposte={props.bloccaRisposte}></StampaOpzioni>}
               {loggedIn && mode === 'view' && !lunghezzautenti &&  !tipodomanda && <>
-                <Form className="flex-fill d-flex w-100" key={t.did} >
+                <Form className="flex-fill d-flex w-100" key={t.did+19} >
                   <Form.Control size="lg" as="textarea" rows={2} placeholder="" readOnly />
                 </Form>
               </>}
             </div>);
-          })
-        }
+          }) : null}
+         
       </ListGroup>
     </>
   )
