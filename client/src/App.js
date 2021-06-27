@@ -43,6 +43,7 @@ function App() {
   const [idTemporaneoDopoCompilazione, setIdTemporaneo] = useState(0)
   const [loggedIn, setLoggedIn] = useState(false);
   const [bloccaRisposte] = useState(true)
+  const [bloccaFiltri, setBloccaFiltri] = useState(false)
   const [admin, setAdmin] = useState({ id: null })
 
   const aggiungiQuestionario = () => {
@@ -59,7 +60,6 @@ function App() {
         if (v.did === k.domanda && k.numrisposte >= v.min && k.numrisposte <= v.max) {
 
           array[i] = 1;
-          console.log(array)
 
         }
       }
@@ -71,15 +71,18 @@ function App() {
       if (array[i] === 1)
         conteggiorisposte++;
     }
-    console.log("CONTEGGIO RISPOSTE: " + conteggiorisposte)
+
     if (conteggiorisposte === numDomandeTotali) {
       console.log("posso inviare il questionario")
+
       for (const v of risposteGlobali) {
         const temp = Object.assign({}, v)
         temp.user = utilizzatore.id
         await API.inserisciRisposta(temp)
       }
+
       await API.aggiornaNumUtentiQuestionario({ qid: questionarioselezionato.qid })
+
       setSubimitButton(false)
       setMessage({ msg: null })
       funzione(true)
@@ -87,7 +90,9 @@ function App() {
       setUtilizzatore({})
       setRisposteGlobali([]);
       setVisualizzaDomande([])
+      setBloccaFiltri(false)
       filtraQuestionario(idTemporaneoDopoCompilazione)
+
     } else {
       console.log("Questionario non valido")
       let errore = []
@@ -102,6 +107,7 @@ function App() {
 
 
   const registraUser = (user) => {
+
     const TempUser = {
       nome: user,
       questionario: questionarioselezionato.qid
@@ -469,7 +475,7 @@ function App() {
 
     <Container fluid>
       <Router>
-        <Navigation setGlobalUser={setGlobalUser} globalUser={globalUser} registraUser={registraUser} loggedIn={loggedIn} message={welcomeAdmin} doLogOut={doLogOut} />
+        <Navigation setGlobalUser={setGlobalUser} globalUser={globalUser} registraUser={registraUser} loggedIn={loggedIn} message={welcomeAdmin} doLogOut={doLogOut} bloccaFiltri={!bloccaFiltri} />
         <Switch>
           <Route exact path="/">
             <Row className="vh-100">
@@ -479,7 +485,7 @@ function App() {
                 contaDomande={contaDomande} myDomande={visualizzaDomande} setGlobalUser={setGlobalUser} message={message} setRicaricaUtenti2={setRicaricaUtenti2}
                 questionari={questionari} setQuestionari={setQuestionari} setMode={setMode} aggiungiDomandeQuestionario={aggiungiDomandeQuestionario}
                 questionarioselezionato={questionarioselezionato} filtraQuestionario={filtraQuestionario} cancellaQuestionario={cancellaQuestionario}
-                mode={mode} idQuestionari={idQuestionari} compilaQuestionario={compilaQuestionario} >
+                mode={mode} idQuestionari={idQuestionari} compilaQuestionario={compilaQuestionario} bloccaFiltri={bloccaFiltri} setBloccaFiltri={setBloccaFiltri} >
 
 
               </QuestionarioManager>
@@ -505,7 +511,7 @@ function App() {
 
 const QuestionarioManager = (props) => {
 
-  const { mode, contaDomande, filtraQuestionario, myDomande, idQuestionari, compilaQuestionario, questionari, aggiungiDomandeQuestionario, questionarioselezionato, cancellaQuestionario } = props;
+  const { mode, contaDomande, filtraQuestionario, myDomande, idQuestionari, compilaQuestionario, questionari, aggiungiDomandeQuestionario, questionarioselezionato, cancellaQuestionario, bloccaFiltri, setBloccaFiltri} = props;
   const { setGlobalUser, submitButton, setRisposteGlobali, verificaRisposte, message, loggedIn, utentiSelezionati, lunghezzautenti, idUtente, incrementeIdUtente, decrementaIdUtente, setRicaricaUtenti2 } = props
 
   const [domande, setDomande] = useState([])
@@ -534,9 +540,8 @@ const QuestionarioManager = (props) => {
       setDid(0)
       setModo('view')
       aggiungiDomandeQuestionario(tempDomande)
-
-
       setDomande([])
+      setBloccaFiltri(false)
     } else {
       setShow(true)
       setErrore({ messsage: "Il questionario NON deve essere vuoto e deve avere ALMENO una domanda obbligatoria." })
@@ -594,7 +599,7 @@ const QuestionarioManager = (props) => {
   {/* BARRA LATERALE FILTRI E MENU PER ADMIN*/}
     <Col xs={3} bg="light" className="below-nav" id="left-sidebar" key={"filtri"}>
 
-      {(mode === 'view' || mode === "compilaUtente") && <Filters items={questionari} filtraQuestionario={filtraQuestionario} setShowCompila={setShowCompila} loggedIn={loggedIn} setRicaricaUtenti2={setRicaricaUtenti2} />}
+      {(mode === 'view' || mode === "compilaUtente") && <Filters items={questionari} filtraQuestionario={filtraQuestionario} setShowCompila={setShowCompila} loggedIn={loggedIn} setRicaricaUtenti2={setRicaricaUtenti2} bloccaFiltri={bloccaFiltri} />}
    
       {mode === 'compila' && loggedIn && <DomandeMenu items={opzioneDomande} aggiungiDomanda={aggiungiDomanda} />}
    
@@ -613,7 +618,7 @@ const QuestionarioManager = (props) => {
         <ContentList key={myDomande.length} questionList={myDomande} SpostaElementi={SpostaElementi} setRisposteGlobali={setRisposteGlobali} bloccaRisposte={!submitButton} />
         <Row className="justify-content-md-center pt-3" id="tasti">
           <Col md="auto">
-            {showCompila && <Button key={"compila"} variant="success" onClick={() => { setGlobalUser(s => !s); setShowCompila(false) }}>Compila</Button>}
+            {showCompila && <Button key={"compila"} variant="success" onClick={() => { setGlobalUser(s => !s); setShowCompila(false); }}>Compila</Button>}
             {submitButton && <Button key={"invia"} variant="danger" onClick={() => verificaRisposte(setShowCompila)}>Invia </Button>}
           </Col>
         </Row>
@@ -627,10 +632,10 @@ const QuestionarioManager = (props) => {
 
         <ContentList key={myDomande.length} questionList={myDomande} SpostaElementi={SpostaElementi} setRisposteGlobali={setRisposteGlobali} bloccaRisposte={!submitButton} mode={mode}/>
         <Row className="justify-content-md-center pt-3" id="tasti">
-          <Col md="auto">
-            {showCompila && <Button key={"compila"} variant="success" onClick={() => { setGlobalUser(s => !s); setShowCompila(false) }}>Compila</Button>}
-            {submitButton && <Button key={"invia"} variant="danger" onClick={() => verificaRisposte(setShowCompila)}>Invia </Button>}
-          </Col>
+         <Col md="auto">
+            {showCompila && <Button key={"compila"} variant="success" onClick={() => { setGlobalUser(s => !s); setShowCompila(false); setBloccaFiltri(true) }}>Compila</Button>}
+           {/*  {submitButton && <Button key={"invia"} variant="danger" onClick={() => verificaRisposte(setShowCompila)}>Invia </Button>} */}
+          </Col> 
         </Row>
       </>}
 
@@ -646,12 +651,12 @@ const QuestionarioManager = (props) => {
         </h2>
 
         <ContentList key={myDomande.length} questionList={myDomande} SpostaElementi={SpostaElementi} setRisposteGlobali={setRisposteGlobali} bloccaRisposte={!submitButton} utentiSelezionati={utentiSelezionati} lunghezzautenti={lunghezzautenti} loggedIn={loggedIn} idUtente={idUtente} mode={mode}/>
-        <Row className="justify-content-md-center pt-3" id="tasti">
+        {/*<Row className="justify-content-md-center pt-3" id="tasti">
           <Col md="auto">
             {showCompila && <Button key={"compila"} variant="success" onClick={() => { setGlobalUser(s => !s); setShowCompila(false) }}>Compila</Button>}
             {submitButton && <Button key={"invia"} variant="danger" onClick={() => verificaRisposte(setShowCompila)}>Invia </Button>}
           </Col>
-        </Row>
+        </Row>*/}
       </>}
 
 
@@ -674,7 +679,7 @@ const QuestionarioManager = (props) => {
         </Alert>}
         <ContentList questionList={domande} SpostaElementi={SpostaElementi} CancellaDomanda={CancellaDomanda} bloccaRisposte={!submitButton} loggedIn={loggedIn} mode={mode}/>
       </>}
-      {/*<ContentList  questionList={domande}  SpostaElementi={SpostaElementi}  />*/}
+
     </Col>
   </>);
 

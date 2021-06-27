@@ -6,7 +6,7 @@ import {NavLink} from 'react-router-dom'
 const Navigation = (props) => {
 
   const [user, setUser] = useState('');
-  const {globalUser, setGlobalUser, loggedIn, message, doLogOut} = props;
+  const {globalUser, setGlobalUser, loggedIn, message, doLogOut, bloccaFiltri} = props;
   const handler = (event)=>{
     event.preventDefault();
     props.registraUser(user)
@@ -17,8 +17,8 @@ const Navigation = (props) => {
     <Navbar bg="success" variant="dark" fixed="top" className={`bg-${message ? message.color :"warning"}`}>
       { /* <Navbar.Toggle aria-controls="left-sidebar" onClick={this.showSidebar}/> */}
       <Navbar.Toggle aria-controls="left-sidebar" />
-      <Navbar.Brand href="/">
-        <CheckAll className="mr-1" size="30" /> ToDo Manager
+       <Navbar.Brand >
+         <CheckAll className="mr-1" size="30" /> ToDo Manager
       </Navbar.Brand>
       
       {globalUser && <Form inline className="my-0 mx-auto" onSubmit={handler}>
@@ -64,9 +64,9 @@ const Navigation = (props) => {
 
  </>:  <Nav className="ml-auto">
         <Nav.Item>
-          <ListGroup variant="flush">
-      <NavLink key = "#all" to = "/login"><ListGroup.Item action>login <PersonCircle size="30" /></ListGroup.Item></NavLink>
-      </ListGroup>
+        { bloccaFiltri &&  <ListGroup variant="flush">
+            <NavLink key = "#all" to = "/login"><ListGroup.Item action>login <PersonCircle size="30" /></ListGroup.Item></NavLink>
+      </ListGroup>}
       </Nav.Item>
       </Nav>}
 
