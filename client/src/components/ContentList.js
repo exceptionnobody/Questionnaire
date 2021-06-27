@@ -61,8 +61,7 @@ const ContentList = (props) => {
   const gestisciRisposte = (value, id, domanda) => {
     const temp = [...risposte];
 
-    if (domanda.tipo === 0 && value.length <= 30) {
-      console.log("ID domanda aperta: " + id)
+    if (domanda.tipo === 0 && value.length <= 200) {
       for (const z of temp) {
         if (z.domanda === id) {
           z.numrisposte = 1
@@ -71,8 +70,6 @@ const ContentList = (props) => {
       }
 
     } else {
-      console.log("ID domanda chiusa: " + domanda.did)
-      console.log(`Opzione domanda chiusa: ${id + 1}`)
       let rispostaData;
       for (const v of temp) {
         if (v.domanda === domanda.did && value) {
@@ -80,7 +77,6 @@ const ContentList = (props) => {
           v[rispostaData] = 1;
           v.numrisposte++;
         }
-        console.log(v)
         if (v.domanda === domanda.did && !value) {
           rispostaData = `opzione${id + 1}`
           v[rispostaData] = 0;
@@ -94,7 +90,7 @@ const ContentList = (props) => {
 
   return (
     <>
-      <ListGroup as="div" variant="flush" key={"listgroup"} >
+      <ListGroup as="div" variant="flush" key={89*questionList.map(q=>q.questionario).lenght} >
         {
           questionList.map(t => {
             const tipodomanda = (t.tipo === 1 && t.numopzioni >= 1) ? true : false;
@@ -126,12 +122,12 @@ const ContentList = (props) => {
 
                 if (r.tipo === 0)
                   return <>
-                    <Form className="flex-fill d-flex w-100" key={t.did} >
+                    <Form className="flex-fill d-flex w-100" key={t.did*17} >
                       <Form.Control size="lg" as="textarea" rows={2} placeholder="Large text" readOnly value={r.opzioneaperta ? r.opzioneaperta : "AVVISO: Risposta NON data"} />
                     </Form>
                   </>
                 else {
-                  return <>{r.opzioni.map((o, j) => <Form.Check type="checkbox" key={+t.did+j} label={o.domanda} checked={o.valorerisposta ? true : false} disabled></Form.Check>)}</>
+                  return <>{r.opzioni.map((o, j) => <Form.Check type="checkbox" key={+t.did+j*17} label={o.domanda} checked={o.valorerisposta ? true : false} disabled></Form.Check>)}</>
 
                 }
 
@@ -140,7 +136,7 @@ const ContentList = (props) => {
               })}
 
               {/* VISUALIZZO LE DOMANDE SE UN QUESTIONARIO NON HA DEGLI UTENTI */}
-              {loggedIn && mode === 'view' && !lunghezzautenti   && tipodomanda && <StampaOpzioni optionsList={t} opzioni={t.opzioni} numopzioni={t.numopzioni} gestisciRisposte={null} bloccaRisposte={props.bloccaRisposte}></StampaOpzioni>}
+              {loggedIn && mode === 'view' && !lunghezzautenti && tipodomanda && <StampaOpzioni optionsList={t} opzioni={t.opzioni} numopzioni={t.numopzioni} gestisciRisposte={null} bloccaRisposte={props.bloccaRisposte}></StampaOpzioni>}
               {loggedIn && mode === 'view' && !lunghezzautenti &&  !tipodomanda && <>
                 <Form className="flex-fill d-flex w-100" key={t.did} >
                   <Form.Control size="lg" as="textarea" rows={2} placeholder="" readOnly />
