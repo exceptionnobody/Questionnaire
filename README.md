@@ -8,9 +8,12 @@
 - ...
 
 Route: /login per autenticare l'admin
-Router: /admin per visualizzare le risposte degli utilizzatori e creare un nuovo questionario
-Router: / pagina principale per gli utilizzatori per compilare il questionario
 
+Route: /admin per lavorare in modalità admin.
+
+Route: / pagina principale per gli utilizzatori per compilare i questionari
+
+Route: /:param viene dirattata o su /admin o su / a seconda se si è autenticati o meno.
 
 ## API Server
 
