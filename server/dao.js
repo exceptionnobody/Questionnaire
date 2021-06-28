@@ -155,20 +155,6 @@ exports.inserisciDomandeChiusa = (domanda) => {
   });
 };
 
-/*domanda.opzione1?domanda.opzione1:null, domanda.opzione2? domanda.opzione2:null, domanda.opzione3?domanda.opzione3:null, domanda.opzione4?domanda.opzione4:null, domanda.opzione5?domanda.opzione5:null, domanda.opzione6?domanda.opzione6:null, domanda.opzione7?domanda.opzione7:null, domanda.opzione8?domanda.opzione8:null, domanda.opzione9?domanda.opzione9:null, domanda.opzione10?domanda.opzione10:null], function (err) {
-*/
-
-exports.cancellaQuestionari = function() {
-  return new Promise((resolve, reject) => {
-      const sql = 'DELETE FROM questionari WHERE qid = ?';
-      db.run(sql, [2], function(err){
-          if(err)
-              reject(err);
-          else 
-              resolve("Task removed successfully");
-      })
-  });
-}
 
 exports.inserisciUser = (user) => {
   return new Promise((resolve, reject) => {

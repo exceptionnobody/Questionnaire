@@ -67,8 +67,6 @@ function App() {
     }
 
     if (conteggiorisposte === numDomandeTotali) {
-      console.log("posso inviare il questionario")
-
       for (const v of risposteGlobali) {
         const temp = Object.assign({}, v)
         temp.user = utilizzatore.id
@@ -88,7 +86,6 @@ function App() {
       filtraQuestionario(idTemporaneoDopoCompilazione)
 
     } else {
-      console.log("Questionario non valido")
       let errore = []
       for (let i = 0; i < numDomandeTotali; i++) {
         if (array[i] === 0) {
@@ -153,8 +150,6 @@ function App() {
 
       const adminServer = await API.logIn(credentials);
 
-      console.log("Login effettuato corretamente");
-
       setAdmin(adminServer)
       setLoggedIn(true);
       setUtilizzatore(null)
@@ -176,7 +171,6 @@ function App() {
       const utentiServer = await API.ottieniUtentiMieiQuestionari(adminServer.id)
 
       //recupero tutti gli utenti che hanno risposto ai questionari dell'admin corrente
-
       // per ogni utente recupero le sue risposte al questionario
       let vett = []
       let stringaopzione;
@@ -201,7 +195,7 @@ function App() {
       }
       setUtenti([...utentiServer]);
 
-      <Redirect to="/" />
+      <Redirect to="/admin" />
 
     } catch (err) {
 
@@ -303,11 +297,8 @@ function App() {
     }
 
     if (admin.id === null && ricaricaQuestionari) {
-      caricaQuestionari(admin.id).then((result) => {
-
-        console.log(result)
+      caricaQuestionari(admin.id).then(() => {
         setMode('view')
-        console.log("QUI")
       })
     }
 
@@ -344,9 +335,6 @@ function App() {
 
         setDomande(result);
         setContaDomande(result.length)
-
-        console.log("Domande")
-        console.log(result)
       })
     }
 
@@ -387,10 +375,7 @@ function App() {
 
     if (primoCaricamento && utenti !== null) {
 
-      caricaUtilizzatori(admin.id).then(() => {
-
-        console.log("TEST")
-      })
+      caricaUtilizzatori(admin.id)
 
     }
 
@@ -407,8 +392,6 @@ function App() {
 
     if (loggedIn && ricaricaUtenti2) {
       caricaQuestionari(admin.id).then(() => {
-
-        console.log("Ricarica Questionari")
         setRicaricaUtenti(true)
 
       })
@@ -453,9 +436,7 @@ function App() {
 
     if (loggedIn && ricaricaUtenti) {
 
-      caricaUtilizzatori(admin).then(() => {
-        console.log("TEST Ricarica Utenti")
-      })
+      caricaUtilizzatori(admin)
 
     }
 
@@ -470,26 +451,38 @@ function App() {
           <Route exact path="/">
             <Row className="vh-100">
 
-              <QuestionarioManager bloccaRisposte={bloccaRisposte} loggedIn={loggedIn} utentiSelezionati={utentiSelezionati} idUtente={idUtente} lunghezzautenti={numeroUtentiSelezionati}
-                submitButton={submitButton} setRisposteGlobali={setRisposteGlobali} verificaRisposte={verificaRisposte} incrementeIdUtente={incrementeIdUtente} decrementaIdUtente={decrementaIdUtente}
-                contaDomande={contaDomande} myDomande={visualizzaDomande} setGlobalUser={setGlobalUser} message={message} setRicaricaUtenti2={setRicaricaUtenti2}
-                questionari={questionari} setQuestionari={setQuestionari} setMode={setMode} aggiungiDomandeQuestionario={aggiungiDomandeQuestionario} setMessage={setMessage}
-                questionarioselezionato={questionarioselezionato} filtraQuestionario={filtraQuestionario} cancellaQuestionario={cancellaQuestionario}
+              <QuestionarioManager bloccaRisposte={bloccaRisposte} loggedIn={loggedIn} submitButton={submitButton} setRisposteGlobali={setRisposteGlobali} verificaRisposte={verificaRisposte}
+                contaDomande={contaDomande} myDomande={visualizzaDomande} setGlobalUser={setGlobalUser} message={message}
+                questionari={questionari} setQuestionari={setQuestionari} setMode={setMode}  setMessage={setMessage}
+                questionarioselezionato={questionarioselezionato} filtraQuestionario={filtraQuestionario} 
                 mode={mode} idQuestionari={idQuestionari} compilaQuestionario={compilaQuestionario} bloccaFiltri={bloccaFiltri} setBloccaFiltri={setBloccaFiltri} >
 
 
               </QuestionarioManager>
 
             </Row>
-            {loggedIn && mode === "view" && <Button variant="success" size="lg" className="fixed-right-bottom" onClick={aggiungiQuestionario}>+</Button>}
-            {loggedIn && mode === "create" && <Button variant="success" size="lg" className="fixed-right-bottom btn btn-lg btn-danger" onClick={chiudiQuestionario}>X</Button>}
           </Route>
 
           <Route path="/login">
+            {loggedIn ? <Redirect to="/admin" /> : <LoginForm message={message} login={doLogin} />}
+          </Route>
 
-            {loggedIn ? <Redirect to="/" /> : <LoginForm message={message} login={doLogin} />}
+          <Route path="/admin">
+          <Row className="vh-100">
+
+          <QuestionarioManager bloccaRisposte={bloccaRisposte} loggedIn={loggedIn} utentiSelezionati={utentiSelezionati} idUtente={idUtente} lunghezzautenti={numeroUtentiSelezionati}
+                submitButton={submitButton}  incrementeIdUtente={incrementeIdUtente} decrementaIdUtente={decrementaIdUtente} compilaQuestionario={compilaQuestionario}
+                contaDomande={contaDomande} myDomande={visualizzaDomande} message={message} setRicaricaUtenti2={setRicaricaUtenti2}
+                questionari={questionari} setQuestionari={setQuestionari} setMode={setMode} aggiungiDomandeQuestionario={aggiungiDomandeQuestionario} setMessage={setMessage}
+                questionarioselezionato={questionarioselezionato} filtraQuestionario={filtraQuestionario} cancellaQuestionario={cancellaQuestionario}
+                mode={mode} idQuestionari={idQuestionari}  bloccaFiltri={bloccaFiltri} setBloccaFiltri={setBloccaFiltri} >
 
 
+              </QuestionarioManager>
+
+            {loggedIn && mode === "view" && <Button variant="success" size="lg" className="fixed-right-bottom" onClick={aggiungiQuestionario}>+</Button>}
+            {loggedIn && mode === "create" && <Button variant="success" size="lg" className="fixed-right-bottom btn btn-lg btn-danger" onClick={chiudiQuestionario}>X</Button>}
+          </Row>
           </Route>
 
         </Switch>

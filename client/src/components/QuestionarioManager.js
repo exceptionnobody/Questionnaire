@@ -118,7 +118,7 @@ const QuestionarioManager = (props) => {
                         {t.msg} {t.domanda}
                     </Alert>)}
                 </Alert>}
-                <ContentList key={myDomande.length} questionList={myDomande} setRisposteGlobali={setRisposteGlobali} bloccaRisposte={!submitButton} />
+                <ContentList  questionList={myDomande} setRisposteGlobali={setRisposteGlobali} bloccaRisposte={!submitButton} />
                 <Row className="justify-content-md-center pt-3" id="tasti">
                     <Col md="auto">
                         {submitButton && <Button key={"invia"} variant="danger" onClick={() => verificaRisposte(setShowCompila)}>Invia </Button>}
@@ -129,9 +129,9 @@ const QuestionarioManager = (props) => {
 
             {/* VISUALIZZAZIONE DEI QUESTIONARI DA PARTE DELL'UTILIZZATORE */}
             {!loggedIn && mode === 'view' && <>
-                <h2 className="pb-3" key={"questionario"}>{questionarioselezionato.titolo}  </h2>
+                <h2 className="pb-3">{questionarioselezionato.titolo}  </h2>
 
-                <ContentList key={questionarioselezionato.qid} questionList={myDomande}  bloccaRisposte={!submitButton} mode={mode} />
+                <ContentList  questionList={myDomande}  bloccaRisposte={!submitButton} mode={mode} />
                
                 <Row className="justify-content-md-center pt-3" id="tasti" key={"compilabutton"}>
                     <Col md="auto">
@@ -142,8 +142,8 @@ const QuestionarioManager = (props) => {
 
             {/* VISUALIZZAZIONE ADMIN DEI QUESTIONARI CON LE RISPOSTE DEGLI UTENTI */}
             {loggedIn && mode === 'view' && <>
-                <h2 className="pb-3">{questionarioselezionato.titolo}  <small className="text-muted">{(idUtente !== null && lunghezzautenti >= 1) ? utentiSelezionati[idUtente].nome : null}
-                    {idUtente !== null && lunghezzautenti > 1 && idUtente !== 0 && <Button variant="primary" size="sm" onClick={() => decrementaIdUtente()}>  <ArrowLeft></ArrowLeft>
+                <h2 className="pb-3" key={questionarioselezionato.titolo}>{questionarioselezionato.titolo}  <small className="text-muted" key={lunghezzautenti}>{(idUtente !== null && lunghezzautenti >= 1) ? utentiSelezionati[idUtente].nome : null}
+                    {idUtente !== null && lunghezzautenti > 1 && idUtente !== 0 && <Button  variant="primary" size="sm" onClick={() => decrementaIdUtente()}>  <ArrowLeft></ArrowLeft>
                     </Button>}
                     {idUtente !== null && lunghezzautenti > 1 && idUtente !== (lunghezzautenti - 1) && <Button variant="primary" size="sm" onClick={() => incrementeIdUtente()}>  <ArrowRight></ArrowRight>
                     </Button>}
@@ -151,7 +151,7 @@ const QuestionarioManager = (props) => {
                 </small>
                 </h2>
 
-                <ContentList key={"admin"} questionList={myDomande} setRisposteGlobali={setRisposteGlobali} bloccaRisposte={!submitButton} utentiSelezionati={utentiSelezionati} lunghezzautenti={lunghezzautenti} loggedIn={loggedIn} idUtente={idUtente} mode={mode} />
+                <ContentList questionList={myDomande} setRisposteGlobali={setRisposteGlobali} bloccaRisposte={!submitButton} utentiSelezionati={utentiSelezionati} lunghezzautenti={lunghezzautenti} loggedIn={loggedIn} idUtente={idUtente} mode={mode} />
             </>}
 
 

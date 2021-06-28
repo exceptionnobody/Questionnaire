@@ -8,12 +8,16 @@ const FormPersonale = (props) => {
     const sottometti = (event) => {
         event.preventDefault();
         event.stopPropagation();
-        props.compilaQuestionario(titolo) 
+        const form = event.target
+        const isValid = form.checkValidity();
+        if(isValid){
+           props.compilaQuestionario(titolo)  
+        }
     }
 
 return <>
-          <h3>Crea Questionario</h3>
-<Form onSubmit={sottometti}>
+<h3>Crea Questionario</h3>
+<Form onSubmit={(event)=>sottometti(event)} id="formuser">
 
   <Form.Row className="align-items-center">
   <Col xs={6} className="my-1">

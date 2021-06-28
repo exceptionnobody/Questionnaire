@@ -21,12 +21,10 @@ function LoginForm(props) {
         }
 
         if (valid) {
-            console.log("Credenziali valide");
             setErrorFlag(false)
             props.login(credentials);
         }
         else {
-            console.log("Credenziali non valide")
             setErrorFlag(true);
             setErrorMessage(errors)
         }

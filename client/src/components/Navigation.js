@@ -9,8 +9,12 @@ const Navigation = (props) => {
   const {globalUser, setGlobalUser, loggedIn, message, doLogOut, bloccaFiltri} = props;
   const handler = (event)=>{
     event.preventDefault();
-    props.registraUser(user)
-    setGlobalUser(false)
+    const form = event.target
+    const isValid = form.checkValidity();
+    if(isValid){
+      props.registraUser(user)
+      setGlobalUser(false)
+    }
   }
 
   return (
@@ -23,7 +27,7 @@ const Navigation = (props) => {
       
       {globalUser && <Form inline className="my-0 mx-auto" onSubmit={handler}>
         <h6>Inserisci il nome:&#160;&#160;</h6>
-        <Form.Control className="mr-2" type="text" placeholder="" onChange={(event)=>setUser(event.target.value)} />
+        <Form.Control className="mr-2" type="text" placeholder="" required onChange={(event)=>setUser(event.target.value)} />
         <Button variant="danger" size="sm" type="submit">
   
         Invia

@@ -151,24 +151,13 @@ app.get('/api/domande',[check('admin').exists({ checkNull: false })] ,async (req
   }
 });
 
-app.get('/api/answer/:id',[check('id').isInt({ min: 1 })], async (req, res) => {
+app.post('/api/questionari',[check('qid').isInt({ min: 0 }), check('admin').isInt({min: 0}), check('titolo').isString(), check('numdomande').isInt({ min: 0 }), check('admin').isInt({ min: 1 })] ,isLoggedIn,async (req, res) => {
+ 
   const errors = validationResult(req);
   if (!errors.isEmpty())
       return res.status(422).json({ errors: errors.array() })
 
-  try {
-      const result = await dao.getOptions(req.params.id);
-      if (result.error)
-          res.status(404).json(result);
-      else
-          res.json(result);
-  } catch (err) {
-      res.status(503).json({error: `Database error during query execution.`});
-  }
-});
 
-app.post('/api/questionari',[check('qid').isInt({ min: 1 }), check(), check('titolo').isString(), check('numdomande').isInt({ min: 0 }), check('admin').isInt({ min: 1 })] ,isLoggedIn,async (req, res) => {
- 
   const questionario = {
     qid: req.body.qid,
     admin: req.body.admin,
@@ -182,8 +171,12 @@ app.post('/api/questionari',[check('qid').isInt({ min: 1 }), check(), check('tit
  })
 
 
- app.put('/api/questionari', isLoggedIn,async (req, res) => {
+ app.put('/api/questionari', [check('qid').isInt({min: 0})],async (req, res) => {
  
+  const errors = validationResult(req);
+  if (!errors.isEmpty())
+      return res.status(422).json({ errors: errors.array() })
+
   const questionario = {
     qid: req.body.qid
   };
@@ -193,8 +186,12 @@ app.post('/api/questionari',[check('qid').isInt({ min: 1 }), check(), check('tit
 
  })
 
- app.put('/api/domande', async (req, res) => {
+ app.put('/api/domande', [check('qid').isInt({min: 0}), check('numdomande').isInt({min: 1})], isLoggedIn ,async (req, res) => {
  
+  const errors = validationResult(req);
+  if (!errors.isEmpty())
+      return res.status(422).json({ errors: errors.array() })
+
   const questionario = {
     qid: req.body.qid,
     numdomande: req.body.numdomande
@@ -206,7 +203,18 @@ app.post('/api/questionari',[check('qid').isInt({ min: 1 }), check(), check('tit
  })
 
 
- app.post('/api/domandeaperte', async (req, res) => {
+ app.post('/api/domandeaperte', 
+ 
+ [check('did').isInt({min: 0}),
+ check('qid').isInt({min: 0}),
+ check('quesito').isString(),
+ check('min').isInt({min: 0}),
+ check('max').isInt({min: 1}),
+ check('tipo').isInt({min: 0, max:1}),
+ check('numopzioni').isInt({min: 1}),
+ check('obbligatoria').isInt({min: 0, max:1}),
+]
+ ,isLoggedIn, async (req, res) => {
  
  const domanda = {
 
@@ -227,8 +235,32 @@ app.post('/api/questionari',[check('qid').isInt({ min: 1 }), check(), check('tit
  })
 
 
- app.post('/api/domandechiuse', async (req, res) => {
- 
+ app.post('/api/domandechiuse',
+ [check('did').isInt({min: 0}),
+ check('qid').isInt({min: 0}),
+ check('quesito').isString(),
+ check('min').isInt({min: 0}),
+ check('max').isInt({min: 1}),
+ check('tipo').isInt({min: 0, max:1}),
+ check('numopzioni').isInt({min: 1}),
+ check('obbligatoria').isInt({min: 0, max:1}),
+ check('opzione1').isString().optional(),
+ check('opzione2').isString().optional(),
+ check('opzione3').isString().optional(),
+ check('opzione4').isString().optional(),
+ check('opzione5').isString().optional(),
+ check('opzione6').isString().optional(),
+ check('opzione7').isString().optional(),
+ check('opzione8').isString().optional(),
+ check('opzione9').isString().optional(),
+ check('opzione10').isString().optional(),
+]
+ ,isLoggedIn,async (req, res) => {
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty())
+      return res.status(422).json({ errors: errors.array() })
+
   const domanda = {
  
    did: req.body.did,
@@ -238,7 +270,17 @@ app.post('/api/questionari',[check('qid').isInt({ min: 1 }), check(), check('tit
    max: req.body.max,
    tipo: req.body.tipo,
    numopzioni: req.body.numopzioni,
-   ...req.body
+   obbligatoria: req.body.obbligatoria,
+   opzione1: req.body.opzione1,
+   opzione2: req.body.opzione2,
+   opzione3: req.body.opzione3,
+   opzione4: req.body.opzione4,
+   opzione5: req.body.opzione5,
+   opzione6: req.body.opzione6,
+   opzione7: req.body.opzione7,
+   opzione8: req.body.opzione8,
+   opzione9: req.body.opzione9,
+   opzione10: req.body.opzione10
    
  }
  
@@ -249,14 +291,10 @@ app.post('/api/questionari',[check('qid').isInt({ min: 1 }), check(), check('tit
  
 
 
-app.delete("/api/questionari", async (req, res) => {
-  
-  dao.cancellaQuestionari().then(() => {res.status(200).end()})
-  .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
-})
-
-
-app.post("/api/utenti", async (req, res) => {
+app.post("/api/utenti", [
+check('nome').isString(),
+check('questionario').isInt({min: 0})
+],async (req, res) => {
 
 const utente = {
   nome: req.body.nome,
@@ -267,7 +305,27 @@ dao.inserisciUser(utente).then((id)=>{res.status(200).json(id).end()})
                           .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
 })
 
-app.post("/api/risposte", async (req, res) => {
+app.post("/api/risposte", 
+[
+
+  check('domanda').isInt(),
+  check('user').isInt(),
+  check('tipo').isInt({min:0, max:1}),
+  check('numrisposte').isInt({min: 1}),
+  check('opzione1').isInt({ min: 0, max: 1 }).optional(),
+  check('opzione2').isInt({ min: 0, max: 1 }).optional(),
+  check('opzione3').isInt({ min: 0, max: 1 }).optional(),
+  check('opzione4').isInt({ min: 0, max: 1 }).optional(),
+  check('opzione5').isInt({ min: 0, max: 1 }).optional(),
+  check('opzione6').isInt({ min: 0, max: 1 }).optional(),
+  check('opzione7').isInt({ min: 0, max: 1 }).optional(),
+  check('opzione8').isInt({ min: 0, max: 1 }).optional(),
+  check('opzione9').isInt({ min: 0, max: 1 }).optional(),
+  check('opzione10').isInt({ min: 0, max: 1 }).optional(),
+  check('opzioneaperta').isString().optional()
+
+]
+,async (req, res) => {
 
   let risposta;
  
@@ -334,7 +392,7 @@ app.get("/api/utenti",[check('admin').isInt({ min: 1 })], isLoggedIn,async (req,
 
 
 
-app.delete("/api/questionari/:qid", [check('qid').isInt({ min: 1 })] ,(req,res) => {
+app.delete("/api/questionari/:qid", [check('qid').isInt({ min: 1 })], isLoggedIn ,(req,res) => {
 
     const errors = validationResult(req);
     if (!errors.isEmpty())
