@@ -132,11 +132,12 @@ function App() {
   const cancellaQuestionario = () => {
     const tempquest = [...questionari]
     const questionarioDaEliminare = tempquest.pop()
-    setIdQuestionari(t => t - 1)
+    setIdQuestionari(t => t-1)
     API.cancellaNuovoQuestionario(questionarioDaEliminare.qid).then(() => {
 
       setQuestionari([...tempquest])
       setMode('view')
+      setIdQuestionari(t=>t+1)
 
     })
 
@@ -149,7 +150,6 @@ function App() {
     try {
 
       const adminServer = await API.logIn(credentials);
-
       setAdmin(adminServer)
       setLoggedIn(true);
       setUtilizzatore(null)
@@ -388,6 +388,7 @@ function App() {
       const result = await API.ottieniMieiQuestionari(aid)
       setRicaricaUtenti2(false)
       setQuestionari(result);
+      setIdQuestionari(result? result.length:0)
     }
 
     if (loggedIn && ricaricaUtenti2) {
@@ -442,6 +443,31 @@ function App() {
 
   }, [ricaricaUtenti, utenti, admin, domande, questionarioselezionato, questionari, loggedIn])
 
+
+  useEffect(()=> {
+
+    const checkAuth = async() => {
+
+      try {
+        const userInfo= await API.getUserInfo();
+        setAdmin(userInfo);
+        setLoggedIn(true);
+        setRicaricaUtenti2(true)
+        setUtilizzatore(null)
+        setIdUtente(null)
+        setWelcomeAdmin({ msg: `Welcome ${userInfo.name}`, color: userInfo.color });
+      } catch(err) {
+        console.error(err.error);
+      }
+
+    };
+
+        checkAuth();
+
+  }, []);
+
+
+
   return (
 
     <Container fluid>
@@ -449,6 +475,7 @@ function App() {
         <Navigation setGlobalUser={setGlobalUser} globalUser={globalUser} registraUser={registraUser} loggedIn={loggedIn} message={welcomeAdmin} doLogOut={doLogOut} bloccaFiltri={!bloccaFiltri} />
         <Switch>
           <Route exact path="/">
+            {!loggedIn ?
             <Row className="vh-100">
 
               <QuestionarioManager bloccaRisposte={bloccaRisposte} loggedIn={loggedIn} submitButton={submitButton} setRisposteGlobali={setRisposteGlobali} verificaRisposte={verificaRisposte}
@@ -460,7 +487,7 @@ function App() {
 
               </QuestionarioManager>
 
-            </Row>
+            </Row>: <Redirect to="/admin" />}
           </Route>
 
           <Route path="/login">
@@ -468,8 +495,8 @@ function App() {
           </Route>
 
           <Route path="/admin">
-          <Row className="vh-100">
-
+          {loggedIn ?   <Row className="vh-100">
+          
           <QuestionarioManager bloccaRisposte={bloccaRisposte} loggedIn={loggedIn} utentiSelezionati={utentiSelezionati} idUtente={idUtente} lunghezzautenti={numeroUtentiSelezionati}
                 submitButton={submitButton}  incrementeIdUtente={incrementeIdUtente} decrementaIdUtente={decrementaIdUtente} compilaQuestionario={compilaQuestionario}
                 contaDomande={contaDomande} myDomande={visualizzaDomande} message={message} setRicaricaUtenti2={setRicaricaUtenti2}
@@ -482,7 +509,11 @@ function App() {
 
             {loggedIn && mode === "view" && <Button variant="success" size="lg" className="fixed-right-bottom" onClick={aggiungiQuestionario}>+</Button>}
             {loggedIn && mode === "create" && <Button variant="success" size="lg" className="fixed-right-bottom btn btn-lg btn-danger" onClick={chiudiQuestionario}>X</Button>}
-          </Row>
+          </Row> : <Redirect to="/"/>}
+          </Route>
+
+          <Route path="/:param">
+            {loggedIn ? <Redirect to="/admin" /> : <Redirect to="/" />}
           </Route>
 
         </Switch>

@@ -59,6 +59,8 @@ app.use(session({
   saveUninitialized: false,
 }));
 
+
+
 const isLoggedIn = (req, res, next) => {
   if(req.isAuthenticated())
     return next();
@@ -87,6 +89,15 @@ app.post('/api/sessions', function(req, res, next) {
         return res.json(req.user);
       });
   })(req, res, next);
+});
+
+// GET /sessions/current
+// check whether the user is logged in or not
+app.get('/api/sessions/current', (req, res) => {
+  if(req.isAuthenticated()) {
+    res.status(200).json(req.user);}
+  else
+    res.status(401).json({error: 'Unauthenticated user!'});;
 });
 
 app.delete('/api/sessions/current', (req, res) => {
@@ -346,10 +357,8 @@ app.post("/api/risposte",
     opzione9: req.body.opzione9, 
     opzione10: req.body.opzione10,
     opzioneaperta: req.body.opzioneaperta
- 
-
-}
-dao.inseriscRisposte(risposta).then((id)=>{res.status(200).json(id).end()})
+ }
+dao.inserisciRisposte(risposta).then((id)=>{res.status(200).json(id).end()})
                               .catch((err) => { res.status(503).json({ errors: [{'param': 'Server', 'msg': err}]})})
   })
 

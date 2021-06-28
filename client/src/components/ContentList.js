@@ -93,7 +93,7 @@ const ContentList = (props) => {
             const tipodomanda = (t.tipo === 1 && t.numopzioni >= 1) ? true : false;
 
             return (<div key={t.did}>
-              <ListGroup.Item as="li" key={u} className={`d-flex w-100  ${t.tipo ? "bg-warning" : "bg-info"}`}  >
+    <ListGroup.Item as="li" key={u} className={`d-flex w-100  ${t.tipo ? "bg-warning" : "bg-info"}`}  >
                 <OptionData optionsList={t} key={t.quesito}/>
                 {loggedIn && t.modificabile && <AnswerControls key={"controlbuttons"} domanda={t} lunghezzadomande={questionList.length} SpostaElementi={SpostaElementi} CancellaDomanda={CancellaDomanda} />}
               </ListGroup.Item>
@@ -115,21 +115,25 @@ const ContentList = (props) => {
               </>}
 
               {/* VISUALIZZO LE RISPOSTE SE UN QUESTIONARIO HA DEGLI UTENTI */}
-              {mode === 'view' && loggedIn && lunghezzautenti >= 1 && utentiSelezionati[idUtente].risposte.filter(f => f.domanda === t.did).map((r) => {
+              {mode === 'view' && loggedIn && lunghezzautenti >= 1 && <>
+
+              {utentiSelezionati[idUtente].risposte.filter(f => f.domanda === t.did).map((r) => {
 
                 if (!r.tipo)
                   return  <Form className="flex-fill d-flex w-100" key={r.opzioneaperta ? r.opzioneaperta : "noanswer"}>
-                      <Form.Control size="lg" as="textarea" key={t.quesito} rows={2} placeholder="Large text" readOnly value={r.opzioneaperta ? r.opzioneaperta : "AVVISO: Risposta NON data"} />
+                      <Form.Control size="lg" as="textarea"  rows={2} placeholder="Large text" readOnly value={r.opzioneaperta ? r.opzioneaperta : "AVVISO: Risposta NON data"} />
                     </Form>
           
                 else {
-                  return <>
-                  {r.opzioni.map((o,l) => <Form.Check type="checkbox" id={l} key={o.domanda} label={o.domanda} checked={o.valorerisposta ? true : false} disabled></Form.Check>)}
-                  </>
+                  return <Form key={t.quesito}>
+                  {r.opzioni.map((o,l) => <Form.Check type="checkbox"  key={o.domanda} label={o.domanda} checked={o.valorerisposta ? true : false} disabled></Form.Check>)}
+                  </Form>
 
-                }
+              }
 
-              })}
+              })
+              
+            }</>}
 
               {/* VISUALIZZO LE DOMANDE SE UN QUESTIONARIO NON HA DEGLI UTENTI */}
               {loggedIn && mode === 'view' && !lunghezzautenti && tipodomanda && <StampaOpzioni optionsList={t} opzioni={t.opzioni} numopzioni={t.numopzioni} gestisciRisposte={null} bloccaRisposte={props.bloccaRisposte}></StampaOpzioni>}

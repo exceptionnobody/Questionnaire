@@ -53,7 +53,7 @@ const QuestionarioManager = (props) => {
         'D1': { label: 'Aggiungi Domanda Chiusa', id: 'd1', fnc: () => { setShowDomanda(true); setModo("chiusa") } },
         'D2': { label: 'Aggiungi Domanda Aperta', id: 'd2', fnc: () => { setShowDomanda(true); setModo("aperta") } },
         'D3': { label: "Pubblica Questionario", id: 'd3', fnc: pubblicaQuestionario },
-        'D4': { label: "Cancella Questionario", id: "d4", fnc: () => { cancellaQuestionario(); setDomande([]); setDid(0) } }
+        'D4': { label: "Cancella Questionario", id: "d4", fnc: () => { setDomande([]); setDid(0); cancellaQuestionario(); } }
     };
 
 
@@ -142,7 +142,7 @@ const QuestionarioManager = (props) => {
 
             {/* VISUALIZZAZIONE ADMIN DEI QUESTIONARI CON LE RISPOSTE DEGLI UTENTI */}
             {loggedIn && mode === 'view' && <>
-                <h2 className="pb-3" key={questionarioselezionato.titolo}>{questionarioselezionato.titolo}  <small className="text-muted" key={lunghezzautenti}>{(idUtente !== null && lunghezzautenti >= 1) ? utentiSelezionati[idUtente].nome : null}
+                <h2 className="pb-3" >{questionarioselezionato.titolo}  <small className="text-muted" >{(idUtente !== null && lunghezzautenti >= 1) ? utentiSelezionati[idUtente].nome : null}
                     {idUtente !== null && lunghezzautenti > 1 && idUtente !== 0 && <Button  variant="primary" size="sm" onClick={() => decrementaIdUtente()}>  <ArrowLeft></ArrowLeft>
                     </Button>}
                     {idUtente !== null && lunghezzautenti > 1 && idUtente !== (lunghezzautenti - 1) && <Button variant="primary" size="sm" onClick={() => incrementeIdUtente()}>  <ArrowRight></ArrowRight>
