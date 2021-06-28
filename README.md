@@ -32,9 +32,9 @@ AUTENTICAZIONE:
 - GET /api/sessions/current per verificare che l'admin sia già loggato
 - POST /api/sessions per autenticare un admin, body richiesto {username: req.body.username,password:req.body.password}
         risposta: {id: row.id,  name: row.user, color: row.color}
-- DELTE /api/sessions/current per deautenticare l'utente
+- DELITE /api/sessions/current per deautenticare l'utente
 
--APPLICAZIONE:
+APPLICAZIONE:
 - GET /api/questionari con parametro ?admin=? l'id dell'admin nell'URL per ottenere tutti i questionari di un dato admin, null per tutti i questionari
       risposta: lista dei questionari dell'admin, se specificato, altrimenti se null ritorna tutti i questionari
 

@@ -165,6 +165,7 @@ function App() {
             arr.push(v)
         }
       }
+      setMessage({ msg: null })
       setDomande([...arr])
       setContaDomande(arr.length)
       setWelcomeAdmin({ msg: `Welcome ${adminServer.name}`, color: adminServer.color });
@@ -279,6 +280,7 @@ function App() {
     setUtenti(null)
     setMode('view')
     setRicaricaQuestionari(true)
+    setMessage({ msg: null })
   }
 
   useEffect(() => {
@@ -491,7 +493,7 @@ function App() {
           </Route>
 
           <Route path="/login">
-            {loggedIn ? <Redirect to="/admin" /> : <LoginForm message={message} login={doLogin} />}
+            {loggedIn ? <Redirect to="/admin" /> : <LoginForm message={message} setMessage={setMessage} login={doLogin} />}
           </Route>
 
           <Route path="/admin">

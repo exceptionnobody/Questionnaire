@@ -142,8 +142,8 @@ const QuestionarioManager = (props) => {
 
             {/* VISUALIZZAZIONE ADMIN DEI QUESTIONARI CON LE RISPOSTE DEGLI UTENTI */}
             {loggedIn && mode === 'view' && <>
-                <h2 className="pb-3" >{questionarioselezionato.titolo}  <small className="text-muted" >{(idUtente !== null && lunghezzautenti >= 1) ? utentiSelezionati[idUtente].nome : null}
-                    {idUtente !== null && lunghezzautenti > 1 && idUtente !== 0 && <Button  variant="primary" size="sm" onClick={() => decrementaIdUtente()}>  <ArrowLeft></ArrowLeft>
+                <h2 className="pb-3" >{questionarioselezionato.titolo}  <small className="text-muted" >{(idUtente !== null && lunghezzautenti >= 1) ? utentiSelezionati[idUtente].nome : null} &nbsp;
+                    {idUtente !== null && lunghezzautenti > 1 && idUtente !== 0 &&  <Button  variant="primary" size="sm" onClick={() => decrementaIdUtente()}>    <ArrowLeft></ArrowLeft>
                     </Button>}
                     {idUtente !== null && lunghezzautenti > 1 && idUtente !== (lunghezzautenti - 1) && <Button variant="primary" size="sm" onClick={() => incrementeIdUtente()}>  <ArrowRight></ArrowRight>
                     </Button>}
